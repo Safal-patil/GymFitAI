@@ -1,0 +1,17 @@
+{
+  "name": "archive",
+  "version": "1.0.0",
+  "description": "This is for import data in database predefined",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parser": "^3.2.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.0"
+  }
+}
