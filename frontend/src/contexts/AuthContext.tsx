@@ -1,20 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-  plan: 'free' | 'pro' | 'platinum';
-}
+import { authService, User, LoginRequest, RegisterRequest } from '../services/authService';
+import { useNotifications } from './NotificationContext';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  login: (credentials: LoginRequest) => Promise<boolean>;
+  register: (userData: RegisterRequest) => Promise<boolean>;
   logout: () => Promise<void>;
-  loginWithGoogle: () => Promise<boolean>;
+  updateUser: (userData: Partial<User>) => void;
   isLoading: boolean;
   clearSession: () => void;
 }
@@ -33,100 +27,122 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
-    // Check for stored auth
-    const storedUser = localStorage.getItem('fitness-user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Check for stored auth and validate with server
+    const initializeAuth = async () => {
+      try {
+        if (authService.isAuthenticated()) {
+          const storedUser = authService.getStoredUser();
+          if (storedUser) {
+            setUser(storedUser);
+            
+            // Validate token with server
+            try {
+              const currentUser = await authService.getCurrentUser();
+              setUser(currentUser);
+            } catch (error) {
+              // Token is invalid, clear auth
+              await authService.logout();
+              setUser(null);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (credentials: LoginRequest): Promise<boolean> => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: User = {
-      id: '1',
-      email,
-      name: email.split('@')[0],
-      plan: 'free',
-      avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('fitness-user', JSON.stringify(mockUser));
-    setIsLoading(false);
-    return true;
+    try {
+      const response = await authService.login(credentials);
+      setUser(response.user);
+      
+      addNotification({
+        type: 'success',
+        title: 'Welcome back!',
+        message: 'You have successfully logged in.'
+      });
+      
+      return true;
+    } catch (error: any) {
+      addNotification({
+        type: 'error',
+        title: 'Login Failed',
+        message: error.message || 'Invalid email or password'
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = async (userData: RegisterRequest): Promise<boolean> => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: User = {
-      id: '1',
-      email,
-      name,
-      plan: 'free',
-      avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('fitness-user', JSON.stringify(mockUser));
-    setIsLoading(false);
-    return true;
-  };
-
-  const loginWithGoogle = async (): Promise<boolean> => {
-    setIsLoading(true);
-    // Simulate Google OAuth
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const mockUser: User = {
-      id: '1',
-      email: 'user@gmail.com',
-      name: 'Fitness User',
-      plan: 'free',
-      avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('fitness-user', JSON.stringify(mockUser));
-    setIsLoading(false);
-    return true;
-  };
-
-  const clearSession = () => {
-    setUser(null);
-    localStorage.removeItem('fitness-user');
-    localStorage.removeItem('fitness-user-stats');
-    localStorage.removeItem('fitness-workouts');
-    // Clear any other session data
-    sessionStorage.clear();
+    try {
+      await authService.register(userData);
+      
+      // Auto-login after registration
+      const loginSuccess = await login(userData);
+      
+      if (loginSuccess) {
+        addNotification({
+          type: 'success',
+          title: 'Account Created!',
+          message: 'Welcome to FitAI! Your account has been created successfully.'
+        });
+      }
+      
+      return loginSuccess;
+    } catch (error: any) {
+      addNotification({
+        type: 'error',
+        title: 'Registration Failed',
+        message: error.message || 'Failed to create account'
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      // Simulate API call to invalidate session on server
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await authService.logout();
+      setUser(null);
       
-      clearSession();
+      addNotification({
+        type: 'info',
+        title: 'Logged Out',
+        message: 'You have been successfully logged out.'
+      });
       
-      // Navigate to landing page after logout
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
-      // Still clear session even if server call fails
-      clearSession();
+      // Still clear local state even if API call fails
+      setUser(null);
       navigate('/');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const updateUser = (userData: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...userData } : null);
+  };
+
+  const clearSession = () => {
+    setUser(null);
+    authService.logout();
   };
 
   return (
@@ -135,7 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login,
       register,
       logout,
-      loginWithGoogle,
+      updateUser,
       isLoading,
       clearSession
     }}>
