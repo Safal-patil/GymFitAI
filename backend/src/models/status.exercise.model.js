@@ -21,6 +21,7 @@ const ExerciseSchema = new Schema({
   calorieBurnPerRep: { type: Number },
 
   status: {
+    completedByUser: { type: Boolean, default: false },
     completePercent : { type: Number, default: 0 },
     totalSets: { type: Number, default: 0 },
     completedSets: { type: Number, default: 0 },

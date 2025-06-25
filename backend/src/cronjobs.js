@@ -3,7 +3,7 @@
 
 import cron from "node-cron";
 import { User } from "./models/user.model.js";
-import { Planner } from "./models/exercisePlanner.model.js";
+import { Notification } from "./models/notification.model.js";
 import { Exercises } from "./models/status.exercise.model.js";
 import { sendNotification } from "./utils/sendNotification.js";
 
@@ -26,13 +26,17 @@ cron.schedule('0 10,19 * * *', async () => {
 
     const isIncomplete =exercises.some(ex => {
       return (
-        ex.status.completedReps < ex.status.totalReps ||
-        ex.status.completedSets < ex.status.totalSets
+        ex.status.completedByUser === false
       );
     });
 
     if (isIncomplete) {
       await sendNotification(user._id, `You still have some workouts to complete today. Let's crush it! 💪`);
+      await Notification.create({
+        userId: user._id,
+        date: today,
+        message: `You still have some workouts to complete today. Let's crush it! 💪`
+      })
     }
   }
 
@@ -58,6 +62,11 @@ cron.schedule('0 12 * * *', async () => {
     await user.save();
 
     await sendNotification(user._id, `Your premium has expired. Upgrade now to unlock more features 🚀`);
+    await Notification.create({
+      userId: user._id,
+      date: today,
+      message: `Your premium has expired. Upgrade now to unlock more features 🚀`
+    })
   }
 
   const sevenDaysAgo = new Date();
@@ -69,7 +78,12 @@ cron.schedule('0 12 * * *', async () => {
     });
 
     for (const user of reminderUsers) {
-    await sendNotification(user._id, `It's been a week! Consider upgrading to premium for personalized nutrition and advanced tracking ✨`);
+      await sendNotification(user._id, `It's been a week! Consider upgrading to premium for personalized nutrition and advanced tracking ✨`);
+      await Notification.create({
+        userId: user._id,
+        date: today,
+        message: `Your premium has expired. Upgrade now to unlock more features 🚀`
+      })
     }
 
   console.log(`[${new Date().toLocaleString()}] Checked and downgraded expired premium users.`);
