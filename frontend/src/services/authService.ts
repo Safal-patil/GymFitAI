@@ -24,6 +24,7 @@ interface AuthResponse {
 
 interface User {
   id: string;
+  _id?: string;
   email: string;
   profile?: {
     name?: string;

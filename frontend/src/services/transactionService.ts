@@ -31,7 +31,7 @@ class TransactionService {
   }
 
   // Save transaction
-  async saveTransaction(transaction: Omit<Transaction, '_id' | 'userId' | 'createdAt'>): Promise<Transaction> {
+  async saveTransaction(transaction: Omit<Transaction, '_id' | 'createdAt'>): Promise<Transaction> {
     try {
       const response = await retryRequest(() => 
         apiClient.post<ApiResponse<Transaction>>('/transaction/savetransaction', { transaction })
