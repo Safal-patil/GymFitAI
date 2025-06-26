@@ -1,4 +1,4 @@
-import { getNotifications, addNotification } from "../controllers/notifications.controller";
+import { getNotifications, addNotification } from "../controllers/notifications.controller.js";
 
 import {Router} from "express";
 import {verifyJWT} from "../middlewares/auth.middleware.js";
