@@ -30,8 +30,8 @@ const Dashboard: React.FC = () => {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    const name = user?.name?.split(' ')[0] || 'there';
-    
+    const name = user?.email?.split(' ')[0] || 'there';
+
     if (hour < 12) return `Good morning, ${name}!`;
     if (hour < 17) return `Good afternoon, ${name}!`;
     return `Good evening, ${name}!`;

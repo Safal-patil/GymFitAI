@@ -9,6 +9,7 @@ interface AuthContextType {
   register: (userData: RegisterRequest) => Promise<boolean>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
+  loginWithGoogle: (googleToken: string) => Promise<boolean>;
   isLoading: boolean;
   clearSession: () => void;
 }
@@ -58,6 +59,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initializeAuth();
   }, []);
+
+  const loginWithGoogle = async (googleToken: string): Promise<boolean> => {
+  setIsLoading(true);
+  try {
+    const response = await authService.loginWithGoogle(googleToken);
+    setUser(response.user);
+
+    addNotification({
+      type: 'success',
+      title: 'Logged In with Google!',
+      message: 'Welcome back!'
+    });
+
+    return true;
+  } catch (error: any) {
+    addNotification({
+      type: 'error',
+      title: 'Google Login Failed',
+      message: error.message || 'Failed to log in with Google'
+    });
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const login = async (credentials: LoginRequest): Promise<boolean> => {
     setIsLoading(true);
@@ -153,7 +180,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logout,
       updateUser,
       isLoading,
-      clearSession
+      clearSession,
+      loginWithGoogle 
     }}>
       {children}
     </AuthContext.Provider>

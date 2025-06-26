@@ -22,6 +22,7 @@ import recommendationrouter from './routes/recommendation.routes.js';
 import transactionrouter from './routes/transaction.routes.js';
 import gymrouter from './routes/exercise.routes.js';
 import notificationrouter from "./routes/notifications.routes.js";
+import googleRouter from "./routes/googleAuth.route.js";
 
 app.use("/api/v1/user", userrouter); //done
 app.use("/api/v1/planner", plannerrouter);//done
@@ -30,6 +31,7 @@ app.use("/api/v1/transaction", transactionrouter);//done
 app.use("/api/v1/statusexercise", exercisestatusrouter);
 app.use("/api/v1/exercise", gymrouter);//done
 app.use("/api/v1/notifications", notificationrouter);
+app.use("/api/v1/auth", googleRouter);
 
 
 

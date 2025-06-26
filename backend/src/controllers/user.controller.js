@@ -306,4 +306,4 @@ const addpushNotification = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Account details updated successfully"))
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser,updateUserprofile, updateAccountDetails, addpushNotification }
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser,updateUserprofile, updateAccountDetails, addpushNotification, generateAccessAndRefereshTokens };
