@@ -2,9 +2,6 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* Import modern font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 * {
   margin: 0;
   padding: 0;
@@ -17,9 +14,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #0a0a0a;
+  background-color: #111827;
   color: #ffffff;
-  overflow-x: hidden;
 }
 
 code {
@@ -27,22 +23,22 @@ code {
     monospace;
 }
 
-/* Modern scrollbar */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #18181b;
+  background: #1f2937;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: #4b5563;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #d97706, #b45309);
+  background: #6b7280;
 }
 
 /* Smooth scrolling */
@@ -58,104 +54,93 @@ textarea:focus {
   outline: none;
 }
 
-/* Modern glass effect */
-.glass {
-  background: rgba(24, 24, 27, 0.8);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+/* Animation utilities */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.glass-dark {
-  background: rgba(10, 10, 10, 0.9);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(245, 158, 11, 0.1);
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-/* Modern button styles */
-.btn-primary {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-  transition: all 0.3s ease;
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.btn-primary:hover {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
-  transform: translateY(-2px);
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
 }
 
-.btn-secondary {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #f59e0b;
-  transition: all 0.3s ease;
+.animate-fade-in-left {
+  animation: fadeInLeft 0.6s ease-out;
 }
 
-.btn-secondary:hover {
-  background: rgba(245, 158, 11, 0.2);
-  border-color: #f59e0b;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+.animate-fade-in-right {
+  animation: fadeInRight 0.6s ease-out;
 }
 
-/* Modern card styles */
-.card {
-  background: rgba(24, 24, 27, 0.8);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(245, 158, 11, 0.1);
-  border-radius: 16px;
-  transition: all 0.3s ease;
+/* Loading spinner */
+.spinner {
+  border: 2px solid #374151;
+  border-top: 2px solid #8b5cf6;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
 }
 
-.card:hover {
-  border-color: rgba(245, 158, 11, 0.3);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  transform: translateY(-5px);
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #f59e0b, #facc15);
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.gradient-text-secondary {
-  background: linear-gradient(135deg, #facc15, #fbbf24);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Button glow effect */
+.btn-glow {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  transition: box-shadow 0.3s ease;
 }
 
-/* Modern animations */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+.btn-glow:hover {
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
 }
 
-.shimmer {
-  position: relative;
-  overflow: hidden;
+/* Card hover effects */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.shimmer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(245, 158, 11, 0.2),
-    transparent
-  );
-  animation: shimmer 2s infinite;
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 /* Pulse animation for notifications */
@@ -200,7 +185,7 @@ textarea:focus {
 
 /* Progress bar animations */
 .progress-bar {
-  background: linear-gradient(90deg, #f59e0b, #facc15);
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
   background-size: 200% 100%;
   animation: progressShine 2s linear infinite;
 }
@@ -235,35 +220,15 @@ textarea:focus {
 .glow-border {
   position: relative;
   border: 1px solid transparent;
-  background: linear-gradient(#18181b, #18181b) padding-box,
-              linear-gradient(135deg, #f59e0b, #facc15) border-box;
-}
-
-/* Modern input styles */
-.input-modern {
-  background: rgba(24, 24, 27, 0.8);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  border-radius: 12px;
-  padding: 12px 16px;
-  color: white;
-  transition: all 0.3s ease;
-}
-
-.input-modern:focus {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-  background: rgba(24, 24, 27, 0.9);
-}
-
-.input-modern::placeholder {
-  color: rgba(161, 161, 170, 0.7);
+  background: linear-gradient(#1f2937, #1f2937) padding-box,
+              linear-gradient(135deg, #8b5cf6, #ec4899) border-box;
 }
 
 /* Custom checkbox and radio styles */
 input[type="checkbox"]:checked,
 input[type="radio"]:checked {
-  background-color: #f59e0b;
-  border-color: #f59e0b;
+  background-color: #8b5cf6;
+  border-color: #8b5cf6;
 }
 
 /* Tooltip styles */
@@ -277,17 +242,16 @@ input[type="radio"]:checked {
   bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(24, 24, 27, 0.95);
+  background-color: #1f2937;
   color: white;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 12px;
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
   z-index: 1000;
-  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .tooltip:hover::before {
@@ -308,7 +272,7 @@ input[type="radio"]:checked {
 
 /* Loading states */
 .skeleton {
-  background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
 }
@@ -322,15 +286,430 @@ input[type="radio"]:checked {
   }
 }
 
-/* Modern hero section */
-.hero-bg {
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
-    linear-gradient(135deg, #0a0a0a 0%, #18181b 50%, #0a0a0a 100%);
+/* Mobile-first responsive utilities */
+@media (max-width: 480px) {
+  .text-responsive {
+    font-size: 12px;
+  }
+  
+  .btn-responsive {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .card-responsive {
+    padding: 12px;
+  }
+  
+  /* Mobile navigation adjustments */
+  .mobile-nav-item {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
 }
 
-/* Workout form responsive styles */
+/* Small Mobile (320px - 480px) */
+@media (min-width: 320px) and (max-width: 480px) {
+  .nav-logo {
+    font-size: 18px;
+  }
+  
+  .nav-user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .mobile-menu-padding {
+    padding: 8px 12px;
+  }
+}
+
+/* Mobile to Tablet (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .text-responsive {
+    font-size: 14px;
+  }
+  
+  .btn-responsive {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  
+  .card-responsive {
+    padding: 16px;
+  }
+  
+  .nav-logo {
+    font-size: 20px;
+  }
+  
+  .mobile-menu-padding {
+    padding: 12px 16px;
+  }
+}
+
+/* Tablet to Desktop (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .nav-desktop-spacing {
+    space-x: 1rem;
+  }
+  
+  .nav-item-padding {
+    padding: 8px 12px;
+  }
+}
+
+/* Large Desktop (1025px+) */
+@media (min-width: 1025px) {
+  .nav-desktop-spacing {
+    space-x: 2rem;
+  }
+  
+  .nav-item-padding {
+    padding: 12px 16px;
+  }
+}
+
+/* Navigation specific responsive styles */
+.nav-responsive {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu-enter {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.mobile-menu-enter-active {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.mobile-menu-exit {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.mobile-menu-exit-active {
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.3s ease-in, opacity 0.3s ease-in;
+}
+
+/* Focus styles for accessibility */
+.nav-item:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Hover animations */
+.nav-item-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-item-hover:hover {
+  transform: translateY(-1px);
+}
+
+/* Mobile menu backdrop */
+.mobile-menu-backdrop {
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Safe area for mobile devices with notches */
+@supports (padding: max(0px)) {
+  .nav-safe-area {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Print styles */
+@media print {
+  .nav-no-print {
+    display: none !important;
+  }
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Touch-friendly interactive elements */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Responsive spacing utilities */
+.space-y-responsive > * + * {
+  margin-top: 1rem;
+}
+
+@media (min-width: 640px) {
+  .space-y-responsive > * + * {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .space-y-responsive > * + * {
+    margin-top: 2rem;
+  }
+}
+
+/* Responsive grid utilities */
+.grid-responsive {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive {
+    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    gap: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Form element improvements */
+.form-input-responsive {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  min-height: 48px;
+  font-size: 16px; /* Prevent zoom on iOS */
+}
+
+@media (min-width: 640px) {
+  .form-input-responsive {
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* Button improvements */
+.btn-responsive {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  min-height: 48px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+@media (min-width: 640px) {
+  .btn-responsive {
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+    min-height: 52px;
+    font-size: 1rem;
+  }
+}
+
+.btn-primary-responsive {
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  min-height: 52px;
+  font-size: 1rem;
+  font-weight: 700;
+  touch-action: manipulation;
+}
+
+@media (min-width: 640px) {
+  .btn-primary-responsive {
+    padding: 1.25rem 2rem;
+    border-radius: 1.25rem;
+    min-height: 56px;
+    font-size: 1.125rem;
+  }
+}
+
+/* Card responsive spacing */
+.card-responsive {
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+@media (min-width: 640px) {
+  .card-responsive {
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-responsive {
+    padding: 2rem;
+    border-radius: 1.5rem;
+  }
+}
+
+/* Text responsive sizing */
+.text-responsive-sm {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-sm {
+    font-size: 1rem;
+  }
+}
+
+.text-responsive-base {
+  font-size: 1rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-base {
+    font-size: 1.125rem;
+  }
+}
+
+.text-responsive-lg {
+  font-size: 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-lg {
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive-lg {
+    font-size: 1.5rem;
+  }
+}
+
+.text-responsive-xl {
+  font-size: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-xl {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive-xl {
+    font-size: 1.875rem;
+  }
+}
+
+/* Container improvements */
+.container-responsive {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Modal improvements */
+.modal-responsive {
+  width: 100%;
+  max-width: calc(100vw - 1rem);
+  max-height: calc(100vh - 1rem);
+  margin: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .modal-responsive {
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
+    margin: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .modal-responsive {
+    max-width: 80vw;
+    max-height: 90vh;
+    margin: auto;
+  }
+}
+
+/* Focus improvements for accessibility */
+.focus-visible:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+/* Improve tap targets on mobile */
+@media (max-width: 640px) {
+  button, 
+  input[type="button"], 
+  input[type="submit"], 
+  input[type="reset"],
+  .btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  select,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .bg-gray-800 {
+    background-color: #000000;
+  }
+  
+  .text-gray-400 {
+    color: #ffffff;
+  }
+  
+  .border-gray-700 {
+    border-color: #ffffff;
+  }
+}
+
+/* ========================================
+   RESPONSIVE WORKOUT FORM STYLES
+   ======================================== */
+
+/* Modal and Container Responsive Styles */
 .workout-form-modal {
   padding: 0.5rem;
 }
@@ -350,9 +729,6 @@ input[type="radio"]:checked {
   min-height: 600px;
   display: flex;
   flex-direction: column;
-  background: rgba(24, 24, 27, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 @media (min-width: 481px) {
@@ -385,10 +761,11 @@ input[type="radio"]:checked {
   }
 }
 
+/* Header Responsive Styles */
 .workout-form-header {
   padding: 1rem;
-  border-bottom: 1px solid rgba(245, 158, 11, 0.2);
-  background: rgba(10, 10, 10, 0.8);
+  border-bottom: 1px solid #374151;
+  background: rgba(17, 24, 39, 0.5);
   flex-shrink: 0;
   backdrop-filter: blur(8px);
   position: sticky;
@@ -396,10 +773,40 @@ input[type="radio"]:checked {
   z-index: 20;
 }
 
+@media (min-width: 481px) {
+  .workout-form-header {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-header {
+    padding: 1.5rem;
+  }
+}
+
 .workout-form-title {
   font-size: 1.125rem;
   font-weight: 700;
   color: white;
+}
+
+@media (min-width: 481px) {
+  .workout-form-title {
+    font-size: 1.25rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .workout-form-title {
+    font-size: 1.875rem;
+  }
 }
 
 .workout-form-close-btn {
@@ -414,9 +821,26 @@ input[type="radio"]:checked {
 }
 
 .workout-form-close-btn:hover {
-  background-color: rgba(245, 158, 11, 0.1);
+  background-color: #374151;
 }
 
+/* Auto-fill Status */
+.workout-form-autofill-status {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 0.75rem;
+}
+
+@media (min-width: 481px) {
+  .workout-form-autofill-status {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+}
+
+/* Progress Steps */
 .workout-form-steps {
   display: flex;
   align-items: center;
@@ -425,6 +849,16 @@ input[type="radio"]:checked {
   scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.workout-form-steps::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 481px) {
+  .workout-form-steps {
+    gap: 1rem;
+  }
 }
 
 .workout-form-step {
@@ -439,9 +873,58 @@ input[type="radio"]:checked {
   transition: all 0.2s;
 }
 
+@media (min-width: 481px) {
+  .workout-form-step {
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    min-width: 120px;
+  }
+}
+
+.workout-form-step-icon {
+  padding: 0.375rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 481px) {
+  .workout-form-step-icon {
+    padding: 0.5rem;
+  }
+}
+
+.workout-form-step-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .workout-form-step-text {
+    display: block;
+    font-size: 0.875rem;
+  }
+}
+
+.workout-form-step-text-mobile {
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: block;
+}
+
+@media (min-width: 769px) {
+  .workout-form-step-text-mobile {
+    display: none;
+  }
+}
+
 .workout-form-step-active {
-  background: rgba(245, 158, 11, 0.2);
-  color: #facc15;
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.workout-form-step-active .workout-form-step-icon {
+  background: rgba(139, 92, 246, 0.2);
 }
 
 .workout-form-step-completed {
@@ -449,15 +932,198 @@ input[type="radio"]:checked {
   color: #4ade80;
 }
 
+.workout-form-step-completed .workout-form-step-icon {
+  background: rgba(34, 197, 94, 0.2);
+}
+
 .workout-form-step-inactive {
   color: #6b7280;
+}
+
+.workout-form-step-inactive .workout-form-step-icon {
+  background: #374151;
+}
+
+/* Content Area */
+.workout-form-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workout-form-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  scroll-behavior: smooth;
+  padding-right: 0.5rem;
+}
+
+/* Custom Scrollbar Styling */
+.workout-form-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.workout-form-scroll-area::-webkit-scrollbar-track {
+  background: rgba(75, 85, 99, 0.3);
+  border-radius: 3px;
+}
+
+.workout-form-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.5);
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.workout-form-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.8);
+}
+
+/* Firefox Scrollbar */
+.workout-form-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.5) rgba(75, 85, 99, 0.3);
+}
+
+.workout-form-main {
+  padding: 1rem 1rem 1rem 0.5rem;
+  margin-right: 0.5rem;
+}
+
+@media (min-width: 481px) {
+  .workout-form-main {
+    padding: 1.25rem 1.25rem 1.25rem 0.75rem;
+    margin-right: 0.75rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-main {
+    padding: 1.5rem 1.5rem 1.5rem 1rem;
+    margin-right: 1rem;
+  }
+}
+
+/* Step Content */
+.workout-form-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+@media (min-width: 481px) {
+  .workout-form-step-content {
+    gap: 2rem;
+    padding-bottom: 2.5rem;
+  }
+}
+
+.workout-form-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  background: linear-gradient(to bottom, #1f2937 80%, transparent);
+  padding: 0.5rem 0;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+@media (min-width: 481px) {
+  .workout-form-section-title {
+    font-size: 1.125rem;
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 0;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-section-title {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem 0;
+  }
+}
+
+/* Grid Layouts */
+.workout-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 481px) {
+  .workout-form-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-grid-2 {
+    gap: 1.5rem;
+  }
+}
+
+.workout-form-radio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.workout-form-option-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 481px) {
+  .workout-form-option-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-option-grid {
+    gap: 1.25rem;
+  }
+}
+
+/* Form Elements */
+.workout-form-field-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.workout-form-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #d1d5db;
+  gap: 0.5rem;
+}
+
+@media (min-width: 481px) {
+  .workout-form-label {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 .workout-form-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: rgba(24, 24, 27, 0.8);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background-color: #374151;
+  border: 1px solid #4b5563;
   border-radius: 0.75rem;
   color: white;
   font-size: 1rem;
@@ -467,33 +1133,427 @@ input[type="radio"]:checked {
 
 .workout-form-input:focus {
   outline: none;
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+@media (min-width: 481px) {
+  .workout-form-input {
+    padding: 0.875rem 1.125rem;
+    border-radius: 1rem;
+    min-height: 52px;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-input {
+    padding: 1rem 1.25rem;
+    min-height: 56px;
+  }
+}
+
+.workout-form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 0.75rem;
+  color: white;
+  font-size: 1rem;
+  min-height: 48px;
+  transition: all 0.2s;
+}
+
+.workout-form-select:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+@media (min-width: 481px) {
+  .workout-form-select {
+    padding: 0.875rem 1.125rem;
+    border-radius: 1rem;
+    min-height: 52px;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-select {
+    padding: 1rem 1.25rem;
+    min-height: 56px;
+  }
+}
+
+.workout-form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 0.75rem;
+  color: white;
+  font-size: 0.875rem;
+  min-height: 80px;
+  resize: vertical;
+  transition: all 0.2s;
+}
+
+.workout-form-textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+@media (min-width: 481px) {
+  .workout-form-textarea {
+    padding: 0.875rem 1.125rem;
+    border-radius: 1rem;
+    font-size: 1rem;
+    min-height: 96px;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-textarea {
+    padding: 1rem 1.25rem;
+    min-height: 112px;
+  }
+}
+
+/* Radio and Option Cards */
+.workout-form-radio-wrapper,
+.workout-form-option-wrapper {
+  position: relative;
+}
+
+.workout-form-radio-card,
+.workout-form-option-card {
+  padding: 0.75rem 1rem;
+  background-color: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  text-align: center;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.workout-form-radio-card:hover,
+.workout-form-option-card:hover {
+  background-color: #4b5563;
+}
+
+.workout-form-radio-wrapper input:checked ~ .workout-form-radio-card,
+.workout-form-option-wrapper input:checked ~ .workout-form-option-card {
+  border-color: #8b5cf6;
+  background-color: rgba(139, 92, 246, 0.2);
+}
+
+@media (min-width: 481px) {
+  .workout-form-radio-card,
+  .workout-form-option-card {
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+    min-height: 52px;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-radio-card,
+  .workout-form-option-card {
+    padding: 1.25rem 1.5rem;
+    min-height: 56px;
+  }
+}
+
+/* Helper Text and Errors */
+.workout-form-helper-text {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.5rem;
+}
+
+.workout-form-error {
+  font-size: 0.875rem;
+  color: #f87171;
+  margin-top: 0.5rem;
+}
+
+/* Generation Content */
+.workout-form-generation-content {
+  text-align: center;
+  padding: 2rem 1rem;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 481px) {
+  .workout-form-generation-content {
+    padding: 3rem 1.5rem;
+  }
+}
+
+.workout-form-generating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+@media (min-width: 481px) {
+  .workout-form-generating {
+    gap: 2rem;
+  }
+}
+
+.workout-form-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workout-form-generating-text {
+  text-align: center;
+  max-width: 100%;
+}
+
+@media (min-width: 481px) {
+  .workout-form-generating-text {
+    max-width: 24rem;
+  }
+}
+
+.workout-form-progress {
+  width: 100%;
+  max-width: 16rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 481px) {
+  .workout-form-progress {
+    max-width: 20rem;
+  }
+}
+
+.workout-form-progress-bar {
+  height: 0.75rem;
+  background: linear-gradient(to right, #8b5cf6, #ec4899);
+  border-radius: 9999px;
+}
+
+@media (min-width: 481px) {
+  .workout-form-progress-bar {
+    height: 1rem;
+  }
+}
+
+.workout-form-ready {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 100%;
+}
+
+@media (min-width: 481px) {
+  .workout-form-ready {
+    max-width: 24rem;
+    margin: 0 auto;
+  }
+}
+
+/* Footer Navigation */
+.workout-form-footer {
+  padding: 1rem;
+  border-top: 1px solid #374151;
+  background: rgba(31, 41, 55, 0.95);
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+@media (min-width: 481px) {
+  .workout-form-footer {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-footer {
+    padding: 1.5rem;
+  }
+}
+
+.workout-form-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  min-height: 44px;
+  transition: all 0.3s;
+  touch-action: manipulation;
+}
+
+@media (min-width: 481px) {
+  .workout-form-nav-btn {
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem;
+    border-radius: 1rem;
+    min-height: 48px;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .workout-form-nav-btn {
+    padding: 1rem 1.5rem;
+    min-height: 52px;
+  }
+}
+
+.workout-form-nav-btn-secondary {
+  color: #9ca3af;
+  background: transparent;
+  border: none;
+}
+
+.workout-form-nav-btn-secondary:hover:not(:disabled) {
+  color: white;
+}
+
+.workout-form-nav-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .workout-form-nav-btn-primary {
-  background: linear-gradient(to right, #f59e0b, #facc15);
+  background: linear-gradient(to right, #7c3aed, #ec4899);
   color: white;
   border: none;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .workout-form-nav-btn-primary:hover:not(:disabled) {
-  box-shadow: 0 10px 25px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.25);
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .bg-gray-800 {
-    background-color: #000000;
+.workout-form-nav-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Ensure buttons are always visible and clickable */
+.workout-form-nav-btn {
+  outline: none;
+}
+
+.workout-form-nav-btn:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling animation */
+@keyframes smoothScroll {
+  from {
+    scroll-behavior: auto;
+  }
+  to {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Enhanced focus indicator for scrollable areas */
+.workout-form-scroll-area:focus-within {
+  outline: 2px solid rgba(139, 92, 246, 0.3);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Touch-friendly improvements for mobile */
+@media (max-width: 480px) {
+  .workout-form-radio-card,
+  .workout-form-option-card,
+  .workout-form-input,
+  .workout-form-select,
+  .workout-form-nav-btn {
+    min-height: 44px;
+    font-size: 16px; /* Prevent zoom on iOS */
   }
   
-  .text-gray-400 {
-    color: #ffffff;
+  .workout-form-textarea {
+    font-size: 16px; /* Prevent zoom on iOS */
   }
   
-  .border-gray-700 {
-    border-color: #ffffff;
+  .workout-form-scroll-area {
+    padding-right: 0.25rem;
+  }
+  
+  .workout-form-main {
+    padding: 0.75rem 0.75rem 0.75rem 0.25rem;
+    margin-right: 0.25rem;
+  }
+}
+
+/* Responsive spacing utilities */
+@media (min-width: 320px) and (max-width: 480px) {
+  .workout-form-container {
+    margin: 0.5rem;
+  }
+  
+  .workout-form-header,
+  .workout-form-main,
+  .workout-form-footer {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  .workout-form-step-content {
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+  }
+  
+  .workout-form-grid-2 {
+    gap: 0.75rem;
+  }
+}
+
+/* Ensure minimum widths are maintained */
+@media (max-width: 360px) {
+  .workout-form-container {
+    min-width: 300px;
+    max-width: calc(100vw - 0.5rem);
+  }
+  
+  .workout-form-step {
+    min-width: 60px;
+    padding: 0.375rem 0.5rem;
+  }
+  
+  .workout-form-step-text,
+  .workout-form-step-text-mobile {
+    font-size: 0.625rem;
+  }
+  
+  .workout-form-scroll-area {
+    padding-right: 0.125rem;
+  }
+  
+  .workout-form-main {
+    margin-right: 0.125rem;
   }
 }
 
@@ -506,68 +1566,8 @@ input[type="radio"]:checked {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* Modern dark theme overrides */
-.bg-gray-900 {
-  background: #0a0a0a !important;
-}
-
-.bg-gray-800 {
-  background: rgba(24, 24, 27, 0.8) !important;
-}
-
-.border-gray-700 {
-  border-color: rgba(245, 158, 11, 0.1) !important;
-}
-
-.text-primary-400 {
-  color: #facc15 !important;
-}
-
-.bg-primary-600 {
-  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-}
-
-.hover\:bg-primary-700:hover {
-  background: linear-gradient(135deg, #d97706, #b45309) !important;
-}
-
-/* Modern fitness theme specific styles */
-.fitness-card {
-  background: rgba(24, 24, 27, 0.9);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  border-radius: 16px;
-  transition: all 0.3s ease;
-}
-
-.fitness-card:hover {
-  border-color: rgba(245, 158, 11, 0.4);
-  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.1);
-  transform: translateY(-2px);
-}
-
-.fitness-button {
-  background: linear-gradient(135deg, #f59e0b 0%, #facc15 100%);
-  border: none;
-  border-radius: 12px;
-  padding: 12px 24px;
-  font-weight: 600;
-  color: #0a0a0a;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-}
-
-.fitness-button:hover {
-  background: linear-gradient(135deg, #facc15 0%, #fbbf24 100%);
-  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
-  transform: translateY(-2px);
-}
-
-.fitness-text-gradient {
-  background: linear-gradient(135deg, #f59e0b 0%, #facc15 50%, #fbbf24 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  
+  .workout-form-scroll-area {
+    scroll-behavior: auto;
+  }
 }
