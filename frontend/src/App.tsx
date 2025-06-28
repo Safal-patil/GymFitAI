@@ -12,30 +12,33 @@ import PreviousWorkouts from './pages/PreviousWorkouts';
 import Pricing from './pages/Pricing';
 import Account from './pages/Account';
 import Layout from './components/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <UserProvider>
-          <AutoFillProvider>
-            <NotificationProvider>
-              <div className="min-h-screen bg-gray-900 text-white">
-                <Routes>
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-                  <Route path="/recommendations" element={<Layout><Recommendations /></Layout>} />
-                  <Route path="/workouts" element={<Layout><PreviousWorkouts /></Layout>} />
-                  <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
-                  <Route path="/account" element={<Layout><Account /></Layout>} />
-                </Routes>
-              </div>
-            </NotificationProvider>
-          </AutoFillProvider>
-        </UserProvider>
-      </AuthProvider>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <NotificationProvider>
+          <AuthProvider>
+            <UserProvider>
+              <AutoFillProvider>
+                <div className="min-h-screen bg-gray-900 text-white">
+                  <Routes>
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+                    <Route path="/recommendations" element={<Layout><Recommendations /></Layout>} />
+                    <Route path="/workouts" element={<Layout><PreviousWorkouts /></Layout>} />
+                    <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
+                    <Route path="/account" element={<Layout><Account /></Layout>} />
+                  </Routes>
+                </div>
+              </AutoFillProvider>
+            </UserProvider>
+          </AuthProvider>
+        </NotificationProvider>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
