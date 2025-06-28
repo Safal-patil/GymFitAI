@@ -24,6 +24,7 @@ interface AuthResponse {
 
 interface User {
   id: string;
+  _id?: string;
   email: string;
   profile?: {
     name?: string;
@@ -169,6 +170,7 @@ class AuthService {
 
   // Check if user is authenticated
   isAuthenticated(): boolean {
+
     return !!localStorage.getItem('fitness-access-token');
   }
 
@@ -177,6 +179,22 @@ class AuthService {
     const userData = localStorage.getItem('fitness-user');
     return userData ? JSON.parse(userData) : null;
   }
+
+  // authService.ts
+ loginWithGoogle = async (googleToken: string) => {
+  const response = await apiClient.post('/auth/google', {
+    token: googleToken,
+  });
+
+  const { accessToken, refreshToken, user } = response.data.data;
+
+  localStorage.setItem('fitness-access-token', accessToken);
+  localStorage.setItem('fitness-refresh-token', refreshToken);
+  localStorage.setItem('fitness-user', JSON.stringify(user));
+
+  return { user };
+};
+
 }
 
 export const authService = new AuthService();

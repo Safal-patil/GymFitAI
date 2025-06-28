@@ -10,15 +10,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.2",
+    "@revenuecat/purchases-js": "^1.7.0",
+    "axios": "^1.10.0",
+    "canvas-confetti": "^1.6.0",
+    "date-fns": "^2.30.0",
+    "framer-motion": "^10.16.4",
+    "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.8.1",
-    "lucide-react": "^0.263.1",
-    "framer-motion": "^10.16.4",
-    "recharts": "^2.8.0",
     "react-hook-form": "^7.45.4",
-    "date-fns": "^2.30.0",
-    "canvas-confetti": "^1.6.0"
+    "react-router-dom": "^6.8.1",
+    "recharts": "^2.8.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",

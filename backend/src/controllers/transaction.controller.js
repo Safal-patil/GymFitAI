@@ -34,7 +34,8 @@ const saveTrasaction = asyncHandler(async(req, res) => {
         userId,
         {
             $set: {
-            premiumExpiry: transaction.premiumExpiry
+            premiumExpiry: transaction.premiumExpiry,
+            tier: "premium"
             }
         },
         { new: true } 
