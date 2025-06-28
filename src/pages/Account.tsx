@@ -18,6 +18,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useUser } from '../contexts/UserContext';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 const Account: React.FC = () => {
   const { user } = useAuth();
@@ -66,6 +67,7 @@ const Account: React.FC = () => {
   };
 
   const currentUser = user || mockUser;
+  const hasSubscription = currentUser.tier === 'premium';
 
   const handleSave = async () => {
     setLoading(true);
@@ -96,7 +98,7 @@ const Account: React.FC = () => {
     }
   ];
 
-  return (
+  const AccountContent = () => (
     <div className="min-h-screen bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -147,22 +149,34 @@ const Account: React.FC = () => {
             </button>
           </div>
 
-          {/* Stats */}
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-            {stats.map((stat, index) => (
-              <div key={index} className="bg-gray-700/50 rounded-lg p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-gray-600 rounded-lg">
-                    {stat.icon}
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-white">{stat.value}</div>
-                    <div className="text-sm text-gray-400">{stat.label}</div>
+          {/* Stats - Only show for premium users */}
+          {hasSubscription ? (
+            <div className="grid md:grid-cols-3 gap-4 mb-6">
+              {stats.map((stat, index) => (
+                <div key={index} className="bg-gray-700/50 rounded-lg p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-gray-600 rounded-lg">
+                      {stat.icon}
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold text-white">{stat.value}</div>
+                      <div className="text-sm text-gray-400">{stat.label}</div>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6">
+              <div className="flex items-center space-x-3">
+                <Crown className="w-6 h-6 text-yellow-400" />
+                <div>
+                  <h3 className="text-white font-semibold">Upgrade to see your analytics</h3>
+                  <p className="text-gray-400 text-sm">Get detailed insights into your fitness progress</p>
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Profile Information */}
@@ -334,45 +348,67 @@ const Account: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Strength Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-gray-800/60 rounded-xl p-6 border border-gray-700 mt-8"
-        >
-          <div className="flex items-center space-x-2 mb-6">
-            <Activity className="w-6 h-6 text-orange-400" />
-            <h3 className="text-xl font-bold text-white">Strength Records</h3>
-          </div>
+        {/* Strength Stats - Only show for premium users */}
+        {hasSubscription ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-gray-800/60 rounded-xl p-6 border border-gray-700 mt-8"
+          >
+            <div className="flex items-center space-x-2 mb-6">
+              <Activity className="w-6 h-6 text-orange-400" />
+              <h3 className="text-xl font-bold text-white">Strength Records</h3>
+            </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="bg-gray-700/50 rounded-lg p-4">
-              <div className="text-sm text-gray-400 mb-1">Max Push-ups</div>
-              <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxPushups}</div>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-gray-700/50 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-1">Max Push-ups</div>
+                <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxPushups}</div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-1">Max Pull-ups</div>
+                <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxPullups}</div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-1">Max Squats</div>
+                <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxSquats}</div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-1">Bench Press (kg)</div>
+                <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxBenchKg}</div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-1">Squat (kg)</div>
+                <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxSquatkg}</div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-1">Deadlift (kg)</div>
+                <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxDeadliftkg}</div>
+              </div>
             </div>
-            <div className="bg-gray-700/50 rounded-lg p-4">
-              <div className="text-sm text-gray-400 mb-1">Max Pull-ups</div>
-              <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxPullups}</div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-gray-800/60 rounded-xl p-6 border border-gray-700 mt-8"
+          >
+            <div className="flex items-center space-x-2 mb-6">
+              <Activity className="w-6 h-6 text-orange-400" />
+              <h3 className="text-xl font-bold text-white">Strength Records</h3>
             </div>
-            <div className="bg-gray-700/50 rounded-lg p-4">
-              <div className="text-sm text-gray-400 mb-1">Max Squats</div>
-              <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxSquats}</div>
+
+            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-6 text-center">
+              <Crown className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+              <h3 className="text-white font-semibold mb-2">Premium Feature</h3>
+              <p className="text-gray-400 text-sm">
+                Track your strength records and personal bests with a Pro subscription
+              </p>
             </div>
-            <div className="bg-gray-700/50 rounded-lg p-4">
-              <div className="text-sm text-gray-400 mb-1">Bench Press (kg)</div>
-              <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxBenchKg}</div>
-            </div>
-            <div className="bg-gray-700/50 rounded-lg p-4">
-              <div className="text-sm text-gray-400 mb-1">Squat (kg)</div>
-              <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxSquatkg}</div>
-            </div>
-            <div className="bg-gray-700/50 rounded-lg p-4">
-              <div className="text-sm text-gray-400 mb-1">Deadlift (kg)</div>
-              <div className="text-2xl font-bold text-white">{currentUser.strengthInfo.maxDeadliftkg}</div>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Save Button */}
         {isEditing && (
@@ -397,6 +433,16 @@ const Account: React.FC = () => {
         )}
       </div>
     </div>
+  );
+
+  return (
+    <SubscriptionGate
+      hasSubscription={hasSubscription}
+      featureName="Advanced Analytics"
+      description="Access detailed fitness analytics, strength records, and comprehensive progress tracking."
+    >
+      <AccountContent />
+    </SubscriptionGate>
   );
 };
 
