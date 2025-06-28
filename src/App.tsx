@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
@@ -15,7 +15,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route
           path="/dashboard"

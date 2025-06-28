@@ -2,9 +2,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  // For demo purposes, we'll allow access without authentication
-  // In a real app, you would check authentication status here
-  const isAuthenticated = true; // Mock authentication
+  // Bypass authentication - always allow access for development
+  const isAuthenticated = true;
 
   return isAuthenticated ? <>{children}</> : <Navigate to="/auth" replace />;
 };
