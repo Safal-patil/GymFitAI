@@ -8,6 +8,6 @@ const recommendationrouter = Router();
 recommendationrouter.route("/planrecommendation").post(verifyJWT, planRecommendation);
 recommendationrouter.route("/historyprediction").get(verifyJWTandPremium, historyPrediction);
 recommendationrouter.route("/chat").post(verifyJWT, chat);
-recommendationrouter.route("/updateExercises").get(verifyJWTandPremium, updateExercises);
+recommendationrouter.route("/updateexercises").post(verifyJWTandPremium, updateExercises);
 
 export default recommendationrouter;

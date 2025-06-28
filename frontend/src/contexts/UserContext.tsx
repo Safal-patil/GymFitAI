@@ -16,6 +16,14 @@ interface UserStats {
   workoutsCompleted: number;
   currentStreak: number;
   totalWorkouts: number;
+  strengthInfo:{
+    maxPushups: number,
+    maxPullups: number,
+    maxSquats: number,
+    maxBenchKg: number,
+    maxSquatkg: number,
+    maxDeadliftkg: number
+  }
 }
 
 interface Workout {
@@ -25,7 +33,6 @@ interface Workout {
   exercises: WorkoutExercise[];
   completed: boolean;
   duration?: number;
-  estimatedDuration?: number;
   difficulty?: string;
   workoutType?: string;
   targetMuscles?: string[];
@@ -34,14 +41,22 @@ interface Workout {
 interface WorkoutExercise {
   id: string;
   name: string;
-  sets: number;
-  reps: number;
+  avgSets: number;
+  avgReps: number;
   weight?: number;
   duration?: number;
   restPeriod?: number;
   instructions?: string;
-  completed: boolean;
-  type: 'strength' | 'cardio' | 'flexibility';
+  completed?:boolean;
+  type: string;
+  status :{
+    completedByUser:  boolean;
+    completePercent : number;
+    totalSets: number;
+    completedSets: number;
+    totalReps: number;
+    completedReps: number
+  }
 }
 
 interface UserContextType {
@@ -60,6 +75,7 @@ interface UserContextType {
   getWorkoutsByDate: (date: string) => Workout[];
   refreshData: () => Promise<void>;
   syncWithServer: () => Promise<void>;
+  givenDate: string;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -79,6 +95,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [calorieData, setCalorieData] = useState<CalorieData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [givenDate, setgivenDate] = useState(getTodayString());
   
   const { user } = useAuth();
   const { addNotification } = useNotifications();
@@ -103,6 +120,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       if (storedWorkouts) {
+        
         setWorkouts(JSON.parse(storedWorkouts));
       }
     } catch (error) {
@@ -120,8 +138,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Fetch user exercises
       const userExercises = await exerciseService.getExercisesByUser();
       
+      
       // Convert server exercises to local workout format
-      const serverWorkouts = convertExercisesToWorkouts(userExercises);
+      const serverWorkouts =  convertExercisesToWorkouts(userExercises);
+      
       setWorkouts(serverWorkouts);
       localStorage.setItem('fitness-workouts', JSON.stringify(serverWorkouts));
       
@@ -129,9 +149,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userPlanners = await plannerService.getPlannerByUser();
       setPlanners(userPlanners);
       
+      
       // Fetch calorie data
       const calories = await exerciseService.getCaloriesByExercises();
       setCalorieData(calories);
+      
       
     } catch (error: any) {
       console.error('Error syncing with server:', error);
@@ -162,14 +184,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const workoutExercises: WorkoutExercise[] = dayExercises.map(ex => ({
         id: ex._id,
         name: ex.name,
-        sets: ex.avgSets,
-        reps: ex.avgReps,
-        weight: undefined, // Not stored in server model
-        duration: undefined,
-        restPeriod: undefined,
+        avgSets: ex.avgSets,
+        avgReps: ex.avgReps,
+        weight: ex.weight, // Not stored in server model
+        duration: ex.duration,
+        restPeriod: ex.restperoid,
         instructions: ex.description,
         completed: ex.status.completedByUser,
-        type: ex.type
+        type: ex.type,
+        status: ex.status     
       }));
 
       const completed = dayExercises.every(ex => ex.status.completedByUser);
@@ -251,12 +274,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const exerciseUpdates = workout.exercises.map(ex => ({
         _id: ex.id,
         status: {
-          completedByUser: ex.completed,
-          totalSets: ex.sets,
-          completedSets: ex.completed ? ex.sets : 0,
-          totalReps: ex.sets * ex.reps,
-          completedReps: ex.completed ? ex.sets * ex.reps : 0,
-          completePercent: ex.completed ? 100 : 0
+          completedByUser: ex.status.completedByUser,
+          totalSets: ex.avgSets,
+          completedSets: ex.status.completedByUser ? ex.avgSets : 0,
+          totalReps: ex.status.completedByUser ? ex.status.totalReps: 0,
+          completedReps: ex.status.completedByUser ? ex.status.totalReps : 0,
+          completePercent: ex.status.completedByUser ? 100 : 0
         }
       }));
 
@@ -275,7 +298,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 ...workout,
                 exercises: workout.exercises.map(exercise =>
                   exercise.id === exerciseId 
-                    ? { ...exercise, completed: true }
+                    ? { ...exercise, status: { ...exercise.status, completedByUser: true } }
                     : exercise
                 )
               }
@@ -304,12 +327,20 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getTodaysWorkout = (): Workout | undefined => {
-    const today = getTodayString();
-    return workouts.find(w => w.date === today && !w.completed);
-  };
+  const today = getTodayString();
+  // workouts.forEach((w, index) => {
+  //   console.log(today)
+  //   console.log(`Workout ${index + 1}:`,  w.date.split('T')[0], "| Completed:", w.completed);
+  // });
 
+  return workouts.find(w => w.date.split('T')[0] === today && !w.completed);
+};
   const getWorkoutsByDate = (date: string): Workout[] => {
-    return workouts.filter(w => w.date === date);
+    // console.log("workouts",workouts);
+    
+    return workouts.filter((w, i) =>{
+      return w.date === date +"T00:00:00.000Z";
+    });
   };
 
   const refreshData = async () => {
@@ -332,7 +363,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       getTodaysWorkout,
       getWorkoutsByDate,
       refreshData,
-      syncWithServer
+      syncWithServer,
+      givenDate
     }}>
       {children}
     </UserContext.Provider>

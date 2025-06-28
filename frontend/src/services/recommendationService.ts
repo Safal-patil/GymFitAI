@@ -60,6 +60,12 @@ class RecommendationService {
     recommendations: string[];
     goals: string[];
     prediction: string[];
+    progressData:[{
+      date: string;
+      weight: number;
+      BodyFat: number;
+    }];
+    BodyType: string;
   }> {
     try {
       const response = await retryRequest(() => 
@@ -91,7 +97,7 @@ class RecommendationService {
   async updateExercises(data: UpdateExercisesRequest): Promise<any> {
     try {
       const response = await retryRequest(() => 
-        apiClient.post<ApiResponse<any>>('/recommendation/updateExercises', data)
+        apiClient.post<ApiResponse<any>>('/recommendation/updateexercises', data)
       );
       
       return response;

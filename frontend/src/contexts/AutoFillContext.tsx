@@ -9,6 +9,15 @@ interface AutoFillData {
   weight?: number;
   bodyFat?: number;
   fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
+
+  strengthInfo:{
+    maxPushups: number,
+    maxPullups: number,
+    maxSquats: number,
+    maxBenchKg: number,
+    maxSquatkg: number,
+    maxDeadliftkg: number
+  }
   
   // Goals & Preferences
   goal?: string;

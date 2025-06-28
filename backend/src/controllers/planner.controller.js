@@ -16,8 +16,9 @@ const plannerbyUser = asyncHandler(async(req, res) => {
     return res.status(200).
     json(new ApiResponse(
         true,
+        planner,
         "Planner fetched successfully!",
-        planner
+        
     ))
 });
 

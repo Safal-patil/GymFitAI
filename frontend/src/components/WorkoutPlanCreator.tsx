@@ -6,9 +6,11 @@ import { useUser } from '../contexts/UserContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useAutoFill } from '../contexts/AutoFillContext';
 import { useRecommendations } from '../hooks/useRecommendations';
+import { authService } from '../services/authService';
 import { getTodayString, getDateString } from '../utils/dateUtils';
 import LoadingSpinner from './LoadingSpinner';
 import ErrorBoundary from './ErrorBoundary';
+
 
 interface WorkoutPlanCreatorProps {
   onClose: () => void;
@@ -18,6 +20,7 @@ interface PlanForm {
   name: string;
   age: number;
   gender: 'male' | 'female' | 'other';
+  bodytype : string;
   height: number;
   weight: number;
   bodyFat?: number;
@@ -34,9 +37,10 @@ interface PlanForm {
 const WorkoutPlanCreator: React.FC<WorkoutPlanCreatorProps> = ({ onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showAutoFillNotification, setShowAutoFillNotification] = useState(false);
+
   
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<PlanForm>();
-  const { updateUserStats, addWorkout, clearUserData, syncWithServer } = useUser();
+  const { userStats,updateUserStats, addWorkout, clearUserData, syncWithServer } = useUser();
   const { addNotification } = useNotifications();
   const { autoFillData, saveAutoFillData, clearAutoFillData, hasAutoFillData, getFieldValue, isFieldAutoFilled } = useAutoFill();
   const { loading: isGenerating, createPlan } = useRecommendations();
@@ -49,6 +53,7 @@ const WorkoutPlanCreator: React.FC<WorkoutPlanCreatorProps> = ({ onClose }) => {
     { title: 'AI Generation', icon: <Brain className="w-4 h-4 sm:w-5 sm:h-5" />, shortTitle: 'Generate' }
   ];
 
+  
   const goals = [
     'Weight Loss & Fat Burn',
     'Muscle Building & Strength',
@@ -95,7 +100,7 @@ const WorkoutPlanCreator: React.FC<WorkoutPlanCreatorProps> = ({ onClose }) => {
   useEffect(() => {
     if (hasAutoFillData && autoFillData) {
       const fieldsToFill: (keyof PlanForm)[] = [
-        'name', 'age', 'gender', 'height', 'weight', 'bodyFat', 'fitnessLevel',
+        'name', 'age', 'gender', 'height', 'weight', 'bodyFat', 'fitnessLevel', 'bodytype',
         'goal', 'daysPerWeek', 'sessionDuration', 'equipment', 'workoutStyle',
         'limitations', 'availableTime'
       ];
@@ -129,9 +134,6 @@ const WorkoutPlanCreator: React.FC<WorkoutPlanCreatorProps> = ({ onClose }) => {
         bodyFat: data.bodyFat,
         goal: data.goal,
         fitnessLevel: data.fitnessLevel,
-        workoutsCompleted: 0,
-        currentStreak: 0,
-        totalWorkouts: 0
       });
 
       // Prepare plan input for API
@@ -141,27 +143,40 @@ const WorkoutPlanCreator: React.FC<WorkoutPlanCreatorProps> = ({ onClose }) => {
           name: data.name,
           gender: data.gender,
           age: data.age,
+          bodytype: data.bodytype,
           weightKg: data.weight,
           heightCm: data.height,
           bodyfat: data.bodyFat,
           experienceLevel: data.fitnessLevel,
-          maxPushups: data.fitnessLevel === 'beginner' ? 10 : data.fitnessLevel === 'intermediate' ? 20 : 30,
-          maxPullups: data.fitnessLevel === 'beginner' ? 2 : data.fitnessLevel === 'intermediate' ? 5 : 10,
-          maxSquats: data.fitnessLevel === 'beginner' ? 15 : data.fitnessLevel === 'intermediate' ? 25 : 40
+          daysPerWeek: data.daysPerWeek
+        },
+        strengthInfo : {
+          maxPushups: userStats?.strengthInfo?.maxPushups || data.fitnessLevel === 'beginner' ? 10 : data.fitnessLevel === 'intermediate' ? 20 : 30,
+          maxPullups: userStats?.strengthInfo?.maxPullups || data.fitnessLevel === 'beginner' ? 2 : data.fitnessLevel === 'intermediate' ? 5 : 10,
+          maxSquats: userStats?.strengthInfo?.maxSquats || data.fitnessLevel === 'beginner' ? 15 : data.fitnessLevel === 'intermediate' ? 25 : 40,
+          maxBenchKg: userStats?.strengthInfo?.maxBenchKg || 10,
+          maxSquatkg: userStats?.strengthInfo?.maxSquatkg || 10,
+          maxDeadliftkg: userStats?.strengthInfo?.maxDeadliftkg || 10
         },
         preferences: {
           goal: data.goal,
           daysPerWeek: data.daysPerWeek,
-          planStyle: data.workoutStyle
+          planStyle: data.workoutStyle,
+          sessionDuration: data.sessionDuration,
+          equipment:data.equipment,
+          limitations: data.limitations,
+          availableTime: data.availableTime
         }
       };
 
-      // Create plan using API
+      await authService.updateProfile(planInput);
+    
       await createPlan(planInput);
-      
+     
+     
       // Sync with server to get the latest data
       await syncWithServer();
-      
+     
       onClose();
     } catch (error) {
       console.error('Error generating workout plan:', error);
@@ -395,6 +410,31 @@ const WorkoutPlanCreator: React.FC<WorkoutPlanCreatorProps> = ({ onClose }) => {
                             <p className="workout-form-error">{errors.gender.message}</p>
                           )}
                         </div>
+
+                        <div className="workout-form-field-wrapper">
+                          <label className="workout-form-label">
+                            Body Type *
+                            <AutoFillIndicator fieldName="gender" />
+                          </label>
+                          <div className="workout-form-radio-grid">
+                            {['Mesomorph', 'Ectomorph', 'Endomorph'].map((type) => (
+                              <label key={type} className="workout-form-radio-wrapper">
+                                <input
+                                  {...register('bodytype', { required: 'Please select your Body Type' })}
+                                  type="radio"
+                                  value={type}
+                                  className="sr-only peer"
+                                />
+                                <div className="workout-form-radio-card">
+                                  <span className="text-white capitalize">{type}</span>
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+                          {errors.bodytype && (
+                            <p className="workout-form-error">{errors.bodytype.message}</p>
+                          )}
+                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -556,6 +596,7 @@ const WorkoutPlanCreator: React.FC<WorkoutPlanCreatorProps> = ({ onClose }) => {
                               className="workout-form-select"
                             >
                               <option value="">Select frequency</option>
+                              <option value="1">1 day (Beginner friendly)</option>
                               <option value="3">3 days (Beginner friendly)</option>
                               <option value="4">4 days (Balanced approach)</option>
                               <option value="5">5 days (Intermediate/Advanced)</option>

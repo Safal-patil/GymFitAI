@@ -3,11 +3,12 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import {uploadOnCloudinary} from "../utils/cloudinary.js";
 
 const generateAccessAndRefereshTokens = async(userId) =>{
     try {
         const user = await User.findById(userId);
-        console.log(user, "user");
+        
 
         const accessToken = user.generateAccessToken();
 
@@ -29,7 +30,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
     const { email, password } = req.body
-    console.log("email: ", email, password);
+    
 
     if ([email, password].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All fields are required")
@@ -67,7 +68,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
 
     const { email, password } = req.body
-    console.log(email);
+    
 
     if ( !email) {
         throw new ApiError(400, "username or email is required")
@@ -217,27 +218,22 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 const updateUserprofile  = asyncHandler(async (req, res)=>{
     
-    const { profile, preferences} = req.body;
-    const avatarLocalPath = req.files?.avatar[0]?.path;
+    const { profile, preferences, strengthInfo} = req.body.input;
     
-    if (!avatarLocalPath) {
-        throw new ApiError(400, "Avatar file is required")
-    }
-
-    const avatar = await uploadOnCloudinary(avatarLocalPath)
-
-    if (!avatar) {
-        throw new ApiError(400, "Avatar file is required")
+    if(!profile || !preferences || !strengthInfo){
+        throw new ApiError(400, "All fields are required")
     }
    
+    
+   
 
-    const userProfile = User.findByIdAndUpdate(
-        req.user._id,
+    const userProfile = await User.findByIdAndUpdate(
+        req.user?._id,
         {
             $set: {
-                avatar: avatar,
-                profile: profile,
-                preferences: preferences
+                strengthInfo :strengthInfo,
+                profile : profile,
+                preferences : preferences
             }
         },
         {
@@ -245,38 +241,46 @@ const updateUserprofile  = asyncHandler(async (req, res)=>{
         }
     )
 
+    
+
     if(!userProfile){
         throw new ApiError(400, "Error Occured while Updating User Profile!")
     }
 
-    return res
+     return res
         .status(200)
-        .json(new ApiResponse(200,
-            userProfile,
-            "User fetched successfully"
-    ))
-
+        .json(new ApiResponse(200,  userProfile, 
+        "Account details updated successfully")
+    )
 
     
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-    const {email } = req.body
-
-    if ( !email) {
-        throw new ApiError(400, "All fields are required")
+    const {email, age, name, height, weight, gender,  bodyFat, bodyType} = req.body.input;
+    
+    const requiredFields = [email, age, name, height, weight, gender, bodyFat, bodyType];
+    if (requiredFields.some(field => field === undefined)) {
+        throw new ApiError(400, "All fields are required");
     }
 
-    const user = await User.findByIdAndUpdate(
+
+     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
-                email: email
+                email: email,
+                "profile.age": age,
+                "profile.name": name,
+                "profile.heightCm": height,
+                "profile.weightKg": weight,
+                "profile.gender": gender,
+                "profile.bodyfat": bodyFat,
+                "profile.bodytype": bodyType
             }
         },
         { new: true }
-
-    ).select("-password")
+    ).select("-password");
 
     return res
         .status(200)
@@ -306,4 +310,44 @@ const addpushNotification = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, user, "Account details updated successfully"))
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser,updateUserprofile, updateAccountDetails, addpushNotification, generateAccessAndRefereshTokens };
+const workoutPhotosUpload = asyncHandler(async (req, res) => {
+  const workoutphotos = req.files;
+
+  if (!workoutphotos || workoutphotos.length === 0) {
+    throw new ApiError(400, "Workout photos are required");
+  }
+
+  await Promise.all(
+    workoutphotos.map(async (image) => {
+      const imageLocalPath = image.path;
+      const image_url = await uploadOnCloudinary(imageLocalPath);
+
+      if (!image_url) {
+        throw new ApiError(400, "Image upload failed");
+      }
+
+      await User.findByIdAndUpdate(req.user?._id, {
+        $push: {
+          workoutPhotos: {
+            url: image_url.url,
+            date: new Date().toISOString().split("T")[0],
+          },
+        },
+      });
+    })
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Workout photos uploaded successfully"));
+});
+
+const getworkoutPhotos = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user?._id)
+    return res
+        .status(200)
+        .json(new ApiResponse(200, user.workoutPhotos, "Workout photos fetched successfully")) 
+    }
+);
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser,updateUserprofile, updateAccountDetails, addpushNotification, getworkoutPhotos, workoutPhotosUpload, generateAccessAndRefereshTokens };

@@ -5,25 +5,42 @@ import bcrypt from "bcrypt";
 const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  avatar: { type: String},// cloudinary url
+  workoutPhotos: [{
+    url: {type: String},
+    date: {type: String}
+  }],// cloudinary url
+  avatar:{type:String},
   profile: {
-    name: String,
+    name: {type: String, default: ""},
     gender: { type: String, enum: ['male','female','other'] },
-    age: Number,
-    weightKg: Number,
-    heightCm: Number,
-    bodyfat : Number,
+    age: {type : Number, default: 0},
+    bodytype: {type: String, default: ""},
+    weightKg: {type : Number, default: 0},
+    heightCm: {type : Number, default: 0},
+    bodyfat : {type : Number, default: 0},
     experienceLevel: { type: String, enum: ['beginner','intermediate','advanced'] },
-    maxPushups: Number,
-    maxPullups: Number,
-    maxSquats: Number
+    currentStreak: {type : Number, default: 0},
+    workoutsCompleted: {type : Number, default: 0},
+    totalWorkouts: {type : Number, default: 0}
+  },
+  strengthInfo:{
+    maxPushups: {type : Number, default: 0},
+    maxPullups: {type : Number, default: 0},
+    maxSquats: {type : Number, default: 0},
+    maxBenchKg: {type : Number, default: 0},
+    maxSquatkg: {type : Number, default: 0},
+    maxDeadliftkg: {type : Number, default: 0}
   },
   premiumExpiry: { type: Date , default: null},
   tier: { type: String, enum: ['free','premium'], default: 'free' },
   preferences: { 
-    goal : String,
-    daysPerWeek: Number, 
-    planStyle: String,
+    goal : {type: String, default: ""},
+    daysPerWeek: {type : Number, default: 0},
+    planStyle: {type: String, default: ""},
+    sessionDuration: {type : Number, default: 0},
+    equipment: {type: String, default: ""},
+    limitations: {type: String, default: ""},
+    availableTime: {type: String, default: ""},
     },
   createdAt: Date,
   updatedAt: Date,
@@ -43,8 +60,6 @@ userSchema.methods.isPasswordCorrect = async function(password){
 }
 
 userSchema.methods.generateAccessToken = function () {
-    console.log(process.env.ACCESS_TOKEN_SECRET, "access token secret");
-    console.log(process.env.ACCESS_TOKEN_EXPIRY, "access token expiry");
     
     return jwt.sign(
         {

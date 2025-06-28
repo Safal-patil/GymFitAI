@@ -23,7 +23,7 @@ export const useRecommendations = (): UseRecommendationsReturn => {
     
     try {
       const result = await recommendationService.createPlanRecommendation(input);
-      
+     
       addNotification({
         type: 'success',
         title: 'Plan Created!',

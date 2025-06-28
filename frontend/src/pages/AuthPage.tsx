@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
+import { log } from 'console';
+import { useUser } from '../contexts/UserContext';
 import GoogleLoginButton from '../components/Buttons/GoogleLoginButton';
 
 interface LoginForm {
@@ -55,7 +57,8 @@ const AuthPage: React.FC = () => {
   const onLoginSubmit = async (data: LoginForm) => {
     const success = await login({email:data.email,password: data.password});
     if (success) {
-      navigate('/dashboard');
+        // refreshData();
+      isLogin ? navigate('/dashboard'): navigate('/auth');
     }
   };
 
@@ -65,7 +68,7 @@ const AuthPage: React.FC = () => {
       return;
     }
     
-    const success = await register({email: data.email, password: data.password});
+    const success = await register(data);
     if (success) {
       navigate('/dashboard');
     }

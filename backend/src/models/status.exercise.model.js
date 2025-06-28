@@ -13,6 +13,11 @@ const ExerciseSchema = new Schema({
   bodyPart: { type: String },
   equipment: { type: String },
 
+  weight: { type: Number },
+  duration: { type: Number },
+  restperoid: { type: Number },
+  instructions: { type: String },
+
   level: { type: String },
   difficultyTag: { type: String },
 
@@ -24,8 +29,8 @@ const ExerciseSchema = new Schema({
     completedByUser: { type: Boolean, default: false },
     completePercent : { type: Number, default: 0 },
     totalSets: { type: Number, default: 0 },
-    completedSets: { type: Number, default: 0 },
-    totalReps: { type: Number, default: 0 },
+    completedSets: { type: Number, default: 1 },
+    totalReps: { type: Number, default: 2 },
     completedReps: { type: Number, default: 0 }
   },
 

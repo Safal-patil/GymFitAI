@@ -46,8 +46,9 @@ const ExercisebyUser = asyncHandler(async(req, res) => {
     res.status(200).
     json(new ApiResponse(
         true,
+        exercises,
         "Exercises fetched successfully!",
-        exercises
+        
     ))
 });
 
@@ -136,7 +137,7 @@ const CaloriesByExercises = asyncHandler(async(req, res) => {
         });
 
 
-        return res.status(200).json(new ApiResponse(true, "Calories fetched successfully!", summary));
+        return res.status(200).json(new ApiResponse(true, summary,"Calories fetched successfully!" ));
 });
 
 

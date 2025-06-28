@@ -3,19 +3,27 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from 'date-fns';
 import { useUser } from '../contexts/UserContext';
-import { formatDate, getTodayString, isPastDate, isFutureDate } from '../utils/dateUtils';
+import { formatDate, getTodayString, isPastDate, isFutureDate, formatDateForCalender } from '../utils/dateUtils';
+import {  isCurrentDays } from '../utils/isCurrentDay';
 
 const ProgressCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { workouts, getWorkoutsByDate } = useUser();
 
+  // console.log(workouts);
+  
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
   const getWorkoutStatus = (date: Date) => {
-    const dateStr = formatDate(date);
+    const dateStr = formatDateForCalender(date);
+    // console.log("dateStr",dateStr);
+    
     const dayWorkouts = getWorkoutsByDate(dateStr);
+    // console.log("dayWorkouts ",dayWorkouts);
+    //   console.log("date in getWorkoutsByDate",dateStr);
+      // console.log("w.date",w.date, "Id: ", i);
     
     // No workouts scheduled for this date
     if (dayWorkouts.length === 0) {
@@ -119,12 +127,18 @@ const ProgressCalendar: React.FC = () => {
         ))}
         
         {daysInMonth.map((date) => {
+          // console.log("date daysInMonth ",date);
+          
           const status = getWorkoutStatus(date);
           const statusColor = getStatusColor(status);
-          const isCurrentDay = isToday(date);
+          const isCurrentDay = isCurrentDays(date, 'Asia/Kolkata');
+          // console.log("status",status);
+          // console.log("statusColor",statusColor);
+          // console.log("isCurrentDay",isCurrentDay);
+          
           const dateStr = formatDate(date);
           const dayWorkouts = getWorkoutsByDate(dateStr);
-          
+          // console.log(`${format(date, 'MMM dd')} - ${getStatusText(status)}${dayWorkouts.length > 0 ? ` (${dayWorkouts.length} workout${dayWorkouts.length > 1 ? 's' : ''})` : ''}`)
           return (
             <motion.div
               key={date.toISOString()}
@@ -135,6 +149,7 @@ const ProgressCalendar: React.FC = () => {
                 ${statusColor}
                 ${status === 'none' ? 'text-gray-400 hover:bg-gray-600' : 'text-white hover:opacity-80'}
               `}
+              
               title={`${format(date, 'MMM dd')} - ${getStatusText(status)}${dayWorkouts.length > 0 ? ` (${dayWorkouts.length} workout${dayWorkouts.length > 1 ? 's' : ''})` : ''}`}
             >
               {format(date, 'd')}
@@ -209,3 +224,5 @@ const ProgressCalendar: React.FC = () => {
 };
 
 export default ProgressCalendar;
+
+

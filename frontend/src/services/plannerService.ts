@@ -53,6 +53,19 @@ class PlannerService {
       throw error;
     }
   }
+
+  async createPlanner(planner: Planner): Promise<Planner> {
+    try {
+      const response = await retryRequest(() => 
+        apiClient.post<ApiResponse<Planner>>('/recommendation/planrecommendation', planner)
+      );
+      
+      return response;
+    } catch (error) {
+      console.error('Failed to create planner:', error);
+      throw error;
+    }
+  }
 }
 
 export const plannerService = new PlannerService();

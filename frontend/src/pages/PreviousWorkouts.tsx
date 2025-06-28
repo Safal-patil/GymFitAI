@@ -13,29 +13,28 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useUser } from '../contexts/UserContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const PreviousWorkouts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [dateRange, setDateRange] = useState('all');
-  const { workouts } = useUser();
+  const { workouts, calorieData } = useUser();
+  const {user} = useAuth();
 
+  const strengthInfo = user?.strengthInfo;
+  console.log(calorieData);
   // Mock data for charts
-  const strengthProgressData = [
-    { date: '2024-01-01', benchPress: 80, squat: 100, deadlift: 120 },
-    { date: '2024-01-08', benchPress: 82, squat: 105, deadlift: 125 },
-    { date: '2024-01-15', benchPress: 85, squat: 110, deadlift: 130 },
-    { date: '2024-01-22', benchPress: 87, squat: 115, deadlift: 135 },
-    { date: '2024-01-29', benchPress: 90, squat: 120, deadlift: 140 },
-  ];
+  const strengthBarData = [
+  { name: 'Pushups', value: strengthInfo?.maxPushups },
+  { name: 'Pullups', value: strengthInfo?.maxPullups },
+  { name: 'Squats', value: strengthInfo?.maxSquats },
+  { name: 'Bench Press (kg)', value: strengthInfo?.maxBenchKg },
+  { name: 'Squat (kg)', value: strengthInfo?.maxSquatkg },
+  { name: 'Deadlift (kg)', value: strengthInfo?.maxDeadliftkg },
+];
 
-  const workoutVolumeData = [
-    { week: 'Week 1', volume: 2500 },
-    { week: 'Week 2', volume: 2800 },
-    { week: 'Week 3', volume: 3200 },
-    { week: 'Week 4', volume: 2900 },
-    { week: 'Week 5', volume: 3500 },
-  ];
+
 
   const filteredWorkouts = workouts.filter(workout => {
     const matchesSearch = workout.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -46,7 +45,7 @@ const PreviousWorkouts: React.FC = () => {
   const completedWorkouts = workouts.filter(w => w.completed);
   const totalVolume = completedWorkouts.reduce((sum, workout) => {
     return sum + workout.exercises.reduce((exerciseSum, exercise) => {
-      return exerciseSum + (exercise.sets * exercise.reps * (exercise.weight || 0));
+      return exerciseSum + (exercise.avgSets * exercise.avgReps * (exercise.weight || 0));
     }, 0);
   }, 0);
 
@@ -188,25 +187,24 @@ const PreviousWorkouts: React.FC = () => {
               <TrendingUp className="w-6 h-6 text-primary-400" />
               <h3 className="text-xl font-bold text-white">Strength Progression</h3>
             </div>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={strengthProgressData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="date" stroke="#9CA3AF" fontSize={12} />
-                  <YAxis stroke="#9CA3AF" fontSize={12} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1F2937', 
-                      border: '1px solid #374151',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Line type="monotone" dataKey="benchPress" stroke="#8B5CF6" strokeWidth={2} name="Bench Press" />
-                  <Line type="monotone" dataKey="squat" stroke="#06B6D4" strokeWidth={2} name="Squat" />
-                  <Line type="monotone" dataKey="deadlift" stroke="#EC4899" strokeWidth={2} name="Deadlift" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <div className="h-64 bg-gray-800 p-4 rounded-xl border border-gray-700">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={strengthBarData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} />
+                <YAxis stroke="#9CA3AF" fontSize={12} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1F2937',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#fff'
+                  }}
+                />
+                <Bar dataKey="value" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
           </motion.div>
 
           {/* Volume Chart */}
@@ -217,26 +215,27 @@ const PreviousWorkouts: React.FC = () => {
             className="bg-gray-800/60 rounded-xl p-6 border border-gray-700"
           >
             <div className="flex items-center space-x-2 mb-6">
-              <BarChart3 className="w-6 h-6 text-green-400" />
-              <h3 className="text-xl font-bold text-white">Weekly Volume</h3>
+              <BarChart3 className="w-6 h-6 text-orange-400" />
+              <h3 className="text-xl font-bold text-white">Calories Burned</h3>
             </div>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={workoutVolumeData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="week" stroke="#9CA3AF" fontSize={12} />
-                  <YAxis stroke="#9CA3AF" fontSize={12} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1F2937', 
-                      border: '1px solid #374151',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Bar dataKey="volume" fill="#10B981" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={calorieData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="date" stroke="#9CA3AF" fontSize={12} />
+                <YAxis stroke="#9CA3AF" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1F2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px'
+                  }}
+                  formatter={(value: number) => [`${value.toFixed(2)} cal`, 'Calories']}
+                />
+                <Bar dataKey="totalCaloriesBurnt" fill="#F97316" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
           </motion.div>
         </div>
 
@@ -339,7 +338,7 @@ const PreviousWorkouts: React.FC = () => {
                       )}
                     </div>
                     <div className="text-xs text-gray-400">
-                      {exercise.sets} × {exercise.reps} {exercise.weight ? `@ ${exercise.weight}kg` : ''}
+                      {exercise.avgSets} × {exercise.avgReps} {exercise.weight ? `@ ${exercise.weight}kg` : ''}
                     </div>
                   </div>
                 ))}

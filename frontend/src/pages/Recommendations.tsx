@@ -16,9 +16,15 @@ import { useRecommendations } from '../hooks/useRecommendations';
 import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorBoundary from '../components/ErrorBoundary';
+import ReactMarkdown from 'react-markdown';
+import { PlannerReport } from '../services/plannerService';
+import { usePlanner } from '../hooks/useplanner';
+import { useUser } from '../contexts/UserContext';
+
 
 const Recommendations: React.FC = () => {
   const [chatMessage, setChatMessage] = useState('');
+  const {refreshData} = useUser();
   const [chatHistory, setChatHistory] = useState([
     {
       type: 'ai',
@@ -26,58 +32,31 @@ const Recommendations: React.FC = () => {
       timestamp: new Date()
     }
   ]);
+    const { getPlanner, getPlannerReport} = usePlanner();
+    const [planner, setplanner]  = useState<PlannerReport>();
+
+   useEffect(() => {
+    const fetchPlannerReport = async () => {
+      try {
+        refreshData();
+        console.log(user?.tier);
+        if(user?.tier === 'premium'){
+          const plannerReport = await getPlannerReport();
+          setplanner(plannerReport);
+        }
+        
+      } catch (err) {
+        console.error("Failed to fetch planner report:", err);
+      }
+    };
+  
+    fetchPlannerReport();
+  }, []);
 
   const { user } = useAuth();
-  const { loading, chatWithAI, getHistoryPrediction } = useRecommendations();
+  const { loading, chatWithAI } = useRecommendations();
 
-  const aiSuggestions = [
-    {
-      title: 'Increase Progressive Overload',
-      description: 'Your bench press has plateaued. Try increasing weight by 2.5kg next session.',
-      type: 'strength',
-      priority: 'high',
-      icon: <TrendingUp className="w-5 h-5" />
-    },
-    {
-      title: 'Focus on Recovery',
-      description: 'Your HRV indicates high stress. Consider a deload week or active recovery.',
-      type: 'recovery',
-      priority: 'medium',
-      icon: <Clock className="w-5 h-5" />
-    },
-    {
-      title: 'Cardio Optimization',
-      description: 'Add 2 HIIT sessions per week to improve cardiovascular endurance.',
-      type: 'cardio',
-      priority: 'low',
-      icon: <Target className="w-5 h-5" />
-    }
-  ];
-
-  const nutritionRecommendations = [
-    {
-      title: 'Pre-Workout Nutrition',
-      description: 'Consume 20-30g carbs 30-60 minutes before training',
-      timing: 'Pre-workout'
-    },
-    {
-      title: 'Post-Workout Recovery',
-      description: '25g whey protein + 40g carbs within 30 minutes',
-      timing: 'Post-workout'
-    },
-    {
-      title: 'Daily Hydration',
-      description: 'Aim for 35ml per kg body weight daily',
-      timing: 'Throughout day'
-    }
-  ];
-
-  const supplements = [
-    { name: 'Creatine Monohydrate', dosage: '5g daily', timing: 'Anytime' },
-    { name: 'Whey Protein', dosage: '25-30g', timing: 'Post-workout' },
-    { name: 'Vitamin D3', dosage: '2000 IU', timing: 'With breakfast' },
-    { name: 'Omega-3', dosage: '1-2g', timing: 'With meals' }
-  ];
+ 
 
   const sendMessage = async () => {
     if (!chatMessage.trim() || loading) return;
@@ -164,37 +143,34 @@ const Recommendations: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {aiSuggestions.map((suggestion, index) => (
+                  {planner?.recommendations?.map((rec, index) => (
                     <motion.div
-                      key={suggestion.title}
+                      key={index}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className={`p-4 rounded-lg border-l-4 ${getPriorityColor(suggestion.priority)}`}
+                      className={`p-4 rounded-lg border-l-4 ${getPriorityColor('medium')}`} // Default priority if not available
                     >
                       <div className="flex items-start space-x-3">
                         <div className="text-primary-400 mt-1">
-                          {suggestion.icon}
+                          <Sparkles className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-white mb-1">{suggestion.title}</h3>
-                          <p className="text-sm text-gray-300 mb-2">{suggestion.description}</p>
+                          <h3 className="font-semibold text-white mb-1">{`Insight ${index + 1}`}</h3>
+                          <p className="text-sm text-gray-300 mb-2">{rec}</p>
                           <div className="flex items-center space-x-2">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              suggestion.priority === 'high' ? 'bg-red-500/20 text-red-300' :
-                              suggestion.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
-                              'bg-green-500/20 text-green-300'
-                            }`}>
-                              {suggestion.priority} priority
+                            <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/20 text-yellow-300">
+                              medium priority
                             </span>
                             <span className="px-2 py-1 text-xs bg-gray-600 text-gray-300 rounded-full">
-                              {suggestion.type}
+                              general
                             </span>
                           </div>
                         </div>
                       </div>
                     </motion.div>
                   ))}
+
                 </div>
 
                 {/* Pro Plan Upgrade */}
@@ -250,7 +226,7 @@ const Recommendations: React.FC = () => {
                           ? 'bg-primary-600 text-white' 
                           : 'bg-gray-700 text-gray-100'
                       }`}>
-                        <p className="text-sm">{chat.message}</p>
+                        <p className="text-sm"><ReactMarkdown>{chat.message}</ReactMarkdown></p>
                         <p className="text-xs opacity-70 mt-1">
                           {chat.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -270,6 +246,7 @@ const Recommendations: React.FC = () => {
                 {/* Chat Input */}
                 <div className="p-6 border-t border-gray-700">
                   <div className="flex space-x-2">
+                    
                     <input
                       type="text"
                       value={chatMessage}
@@ -279,6 +256,7 @@ const Recommendations: React.FC = () => {
                       disabled={loading}
                       className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-white placeholder-gray-400 disabled:opacity-50"
                     />
+                    
                     <button
                       onClick={sendMessage}
                       disabled={loading || !chatMessage.trim()}
@@ -306,23 +284,24 @@ const Recommendations: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {nutritionRecommendations.map((rec, index) => (
+                  {planner?.nutrition?.map((tip, index) => (
                     <motion.div
-                      key={rec.title}
+                      key={index}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 + index * 0.1 }}
                       className="p-4 bg-gray-700/50 rounded-lg"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-white">{rec.title}</h3>
+                        <h3 className="font-semibold text-white">{`Tip ${index + 1}`}</h3>
                         <span className="px-2 py-1 text-xs bg-green-500/20 text-green-300 rounded-full">
-                          {rec.timing}
+                          Nutrition
                         </span>
                       </div>
-                      <p className="text-sm text-gray-300">{rec.description}</p>
+                      <p className="text-sm text-gray-300">{tip}</p>
                     </motion.div>
                   ))}
+
                 </div>
               </motion.div>
 
@@ -335,27 +314,28 @@ const Recommendations: React.FC = () => {
               >
                 <div className="flex items-center space-x-2 mb-6">
                   <Pill className="w-6 h-6 text-blue-400" />
-                  <h2 className="text-xl font-bold text-white">Supplements</h2>
+                  <h2 className="text-xl font-bold text-white">Recommendations</h2>
                 </div>
 
                 <div className="space-y-3">
-                  {supplements.map((supplement, index) => (
+                  {planner?.prediction?.map((item, index) => (
                     <motion.div
-                      key={supplement.name}
+                      key={index}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 + index * 0.1 }}
                       className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg"
                     >
                       <div>
-                        <h4 className="font-medium text-white">{supplement.name}</h4>
-                        <p className="text-sm text-gray-400">{supplement.dosage}</p>
+                        <h4 className="font-medium text-white">{`Prediction ${index + 1}`}</h4>
+                        <p className="text-sm text-gray-400">{item}</p>
                       </div>
                       <span className="px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full">
-                        {supplement.timing}
+                        Auto
                       </span>
                     </motion.div>
                   ))}
+
                 </div>
 
                 <div className="mt-6 p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">

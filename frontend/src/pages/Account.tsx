@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, 
@@ -29,12 +29,16 @@ import {
   CheckCircle,
   Calculator,
   TrendingUp,
-  Info
+  Info,
+  Brain
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useForm } from 'react-hook-form';
+import { authService } from '../services/authService';
+import { recommendationService } from '../services/recommendationService';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface ProfileForm {
   name: string;
@@ -66,6 +70,10 @@ interface ProgressPhoto {
 }
 
 const Account: React.FC = () => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const { user } = useAuth();
   const { addNotification } = useNotifications();
   const [activeTab, setActiveTab] = useState('profile');
@@ -81,6 +89,7 @@ const Account: React.FC = () => {
     neck: '',
     hip: ''
   });
+  console.log(user);
   const [bodyFatResult, setBodyFatResult] = useState<BodyFatCalculation | null>(null);
   const [bodyFatHistory, setBodyFatHistory] = useState<BodyFatCalculation[]>([
     { 
@@ -105,22 +114,37 @@ const Account: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
   const [progressPhotos, setProgressPhotos] = useState<ProgressPhoto[]>([
-    { 
-      id: '1', 
-      url: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=400&h=600&fit=crop', 
-      date: '2024-01-01' 
-    },
-    { 
-      id: '2', 
-      url: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=400&h=600&fit=crop', 
-      date: '2024-01-15' 
-    },
-    { 
-      id: '3', 
-      url: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=400&h=600&fit=crop', 
-      date: '2024-01-29' 
-    }
   ]);
+  const [showAnalytics, setshowAnalytics] = useState(false);
+  const currentWeigth  = user?.profile.weightKg || 0;
+  const currentBodyfat = user?.profile.bodyfat || 0;
+  const Height = user?.profile.heightCm || 100;
+  const currentBMI= (currentWeigth / ((Height/100) * (Height/100)));
+  const category = ((bmi: number): string => {
+  if (bmi < 18.5) {
+    return "Underweight";
+  } else if (bmi >= 18.5 && bmi <= 24.9) {
+    return "Healthy Weight";
+  } else if (bmi >= 25 && bmi <= 29.9) {
+    return "Overweight";
+  } else if (bmi >= 30) {
+    return "Obesity";
+  } else {
+    return "Invalid BMI";
+  }
+})(currentBMI); 
+
+  useEffect(() => {
+      const fetchimages = async () => {
+        try {
+          const response = await authService.getWorkoutPhotos();
+          setProgressPhotos(response);
+        } catch (error) {
+          console.error('Error fetching images:', error);
+        }
+      }
+      fetchimages();
+  }, []);
 
   const [notifications, setNotifications] = useState({
     workoutReminders: true,
@@ -129,20 +153,22 @@ const Account: React.FC = () => {
     marketingEmails: false
   });
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<ProfileForm>({
-    defaultValues: {
-      name: user?.name || '',
-      email: user?.email || '',
-      age: 28,
-      gender: 'male',
-      height: 175,
-      weight: 73,
-      bodyFat: 15,
-      bodyType: 'mesomorph',
-      bodyTypeNotes: ''
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<ProfileForm>();
+    useEffect(() => {
+    if (user?.profile) {
+      reset({
+        name: user.profile.name || '',
+        email: user.email || '',
+        age: user.profile.age || 0,
+        gender: user.profile.gender || 'male',
+        height: user.profile.heightCm || 0,
+        weight: user.profile.weightKg || 0,
+        bodyFat: user.profile.bodyfat || 15,
+        bodyType: user.profile.bodytype || '',
+        bodyTypeNotes: ''
+      });
     }
-  });
-
+  }, [user]);
   const watchedBodyType = watch('bodyType');
 
   const tabs = [
@@ -174,17 +200,15 @@ const Account: React.FC = () => {
   ];
 
   // Mock analytics data
-  const progressData = [
-    { date: '2024-01-01', weight: 75, bodyFat: 18 },
-    { date: '2024-01-08', weight: 74.5, bodyFat: 17.8 },
-    { date: '2024-01-15', weight: 74, bodyFat: 17.5 },
-    { date: '2024-01-22', weight: 73.5, bodyFat: 17.2 },
-    { date: '2024-01-29', weight: 73, bodyFat: 17 },
-  ];
+  const [progressData, setprogressData] = useState<{
+      date: string;
+      weight: number;
+      BodyFat: number;
+    }[]>([]);
 
   // Body type data
   const bodyTypesData = {
-    lean: {
+    Lean: {
       name: 'Lean',
       image: 'https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg?auto=compress&cs=tinysrgb&w=400&h=500&fit=crop',
       description: 'Naturally slim build with low body fat and visible muscle definition. Fast metabolism makes weight gain challenging but muscle definition comes easier.',
@@ -205,7 +229,7 @@ const Account: React.FC = () => {
         tips: 'Eat frequently (every 2-3 hours), focus on calorie-dense foods, aim for 2500-3000+ calories daily'
       }
     },
-    average: {
+    Average: {
       name: 'Average',
       image: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400&h=500&fit=crop',
       description: 'Balanced proportions with moderate muscle mass and body fat. Responds well to consistent training and adapts to various fitness goals effectively.',
@@ -226,7 +250,7 @@ const Account: React.FC = () => {
         tips: 'Balanced macronutrients, moderate portions, adjust calories based on goals (2000-2500 daily)'
       }
     },
-    fit: {
+    Fit: {
       name: 'Fit',
       image: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=400&h=500&fit=crop',
       description: 'Athletic build with good muscle development and low body fat. Regular training has resulted in visible fitness and strength gains.',
@@ -247,7 +271,7 @@ const Account: React.FC = () => {
         tips: 'Performance-focused nutrition, timing around workouts, 2200-2800 calories based on training intensity'
       }
     },
-    muscular: {
+    Muscular: {
       name: 'Muscular',
       image: 'https://images.pexels.com/photos/1431282/pexels-photo-1431282.jpeg?auto=compress&cs=tinysrgb&w=400&h=500&fit=crop',
       description: 'Well-developed muscle mass with broad shoulders and defined physique. Responds excellently to strength training and builds muscle efficiently.',
@@ -268,7 +292,7 @@ const Account: React.FC = () => {
         tips: 'High protein intake (1.6-2.2g per kg), calorie cycling, focus on post-workout nutrition (2800-3500+ calories)'
       }
     },
-    larger: {
+    Larger: {
       name: 'Larger Body',
       image: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=400&h=500&fit=crop',
       description: 'Robust frame with higher body fat percentage but often substantial muscle underneath. Strong foundation for building both strength and endurance.',
@@ -408,35 +432,38 @@ const Account: React.FC = () => {
   const handleSave = async (data: ProfileForm) => {
     setSaving(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      addNotification('Profile updated successfully!', 'success');
-      setIsEditing(false);
-    } catch (error) {
-      addNotification('Failed to update profile', 'error');
-    } finally {
-      setSaving(false);
-    }
+      
+          await authService.updateAccountDetails(data);
+          addNotification({type: 'info',
+          title: 'Profile updated',
+          message: 'All previously saved form data has been saved. You can now start fresh.'
+    });
+          setIsEditing(false);
+        } catch (error) {
+          addNotification({type: 'info',
+          title: 'Error',
+          message: 'You can now start fresh.'
+    });
+        } finally {
+          setSaving(false);
+        }
   };
 
-  const handlePhotoUpload = (files: FileList | null) => {
+  const handlePhotoUpload = async(files: FileList | null) => {
     if (!files) return;
-    
-    Array.from(files).forEach(file => {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const newPhoto: ProgressPhoto = {
-            id: Date.now().toString(),
-            url: e.target?.result as string,
-            date: new Date().toISOString().split('T')[0],
-            file
-          };
-          setProgressPhotos(prev => [...prev, newPhoto]);
-        };
-        reader.readAsDataURL(file);
-      }
+    try {
+      console.log(files);
+      
+      await authService.uploadWorkoutPhotos(files);
+      addNotification({type: 'info',
+      title: 'Photos uploaded',
+      message: 'You can now start fresh.'});
+    } catch (error) {
+      addNotification({type: 'info',
+          title: 'Error',
+          message: 'You can now start fresh.'
     });
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -455,10 +482,31 @@ const Account: React.FC = () => {
     setIsDragOver(false);
   };
 
-  const deletePhoto = (id: string) => {
-    setProgressPhotos(prev => prev.filter(photo => photo.id !== id));
-    if (selectedPhoto?.id === id) {
-      setSelectedPhoto(null);
+  const generateAnalyticsData = async()=>{
+    try {
+        setIsGenerating(true);
+        const response = await recommendationService.getHistoryPrediction();
+        setprogressData(response.progressData);
+        setSelectedBodyType(response.BodyType);
+        setshowAnalytics(true);
+        setIsGenerating(false);
+    } catch (error) {
+      setIsGenerating(false);
+    }
+  }
+
+  const handleChangePassword = async () => {
+    try {
+      const response = await authService.changePassword(oldPassword, newPassword);
+      if(response){
+        alert('Password updated successfully!');
+      }
+      else{
+        alert('Password update failed!');
+      }
+      setShowModal(false);
+    } catch (error) {
+      alert('Error: ' + (error as Error).message);
     }
   };
 
@@ -610,15 +658,182 @@ const Account: React.FC = () => {
         </div>
       </form>
 
-      {/* Body Type Information */}
-      {selectedBodyTypeData && (
+      
+
+      {/* Progress Photos */}
+      <div>
+        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <Camera className="w-5 h-5" />
+          Progress Photos
+        </h3>
+        
+        <div 
+          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            isDragOver ? 'border-blue-400 bg-blue-400/10' : 'border-gray-600 hover:border-gray-500'
+          }`}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+        >
+          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-300 mb-2">Drag and drop photos here, or click to select</p>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            Select Photos
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => handlePhotoUpload(e.target.files)}
+            className="hidden"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          {progressPhotos.map(photo => (
+            <div key={photo.id} className="relative group">
+              <img
+                src={photo.url}
+                alt={`Progress ${photo.date}`}
+                className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setSelectedPhoto(photo)}
+              />
+              <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                {new Date(photo.date).toLocaleDateString()}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAnalyticsTab = () => (
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold text-white">Analytics</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gray-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-500/20 rounded-lg">
+              <BarChart3 className="w-6 h-6 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Current Weight</h3>
+              <p className="text-gray-400 text-sm">Latest measurement</p>
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-white"> {currentWeigth} kg</p>
+          <p className="text-green-400 text-sm mt-1">-2.0 kg this month</p>
+        </div>
+
+        <div className="bg-gray-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-purple-500/20 rounded-lg">
+              <Target className="w-6 h-6 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">Body Fat</h3>
+              <p className="text-gray-400 text-sm">Current percentage</p>
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-white"> {currentBodyfat}%</p>
+          <p className="text-green-400 text-sm mt-1">-1.0% this month</p>
+        </div>
+
+        <div className="bg-gray-800 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-orange-500/20 rounded-lg">
+              <Activity className="w-6 h-6 text-orange-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">BMI</h3>
+              <p className="text-gray-400 text-sm">Body Mass Index</p>
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-white">{currentBMI.toFixed(2)}</p>
+          <p className="text-green-400 text-sm mt-1">{category}</p>
+        </div>
+        </div>
+        <motion.button
+        onClick={generateAnalyticsData}
+        disabled={isGenerating}
+        className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        {isGenerating ? (
+          <>
+            <LoadingSpinner size="sm" />
+            <span>Generating...</span>
+          </>
+        ) : (
+          <>
+            <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span>Generate Future Analytics</span>
+          </>
+        )}
+      </motion.button>
+            {showAnalytics && (
+        <div className="bg-gray-800 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Progress Over Time</h3>
+          <div className="h-80 min-h-[320px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={progressData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#9CA3AF"
+                  fontSize={12}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString()}
+                />
+                <YAxis stroke="#9CA3AF" fontSize={12} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1F2937',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#F3F4F6',
+                  }}
+                  labelFormatter={(value) => new Date(value).toLocaleDateString()}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="weight"
+                  stroke="#3B82F6"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                  name="Weight (kg)"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="bodyFat"
+                  stroke="#8B5CF6"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
+                  name="Body Fat (%)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+      {showAnalytics &&selectedBodyTypeData && (
         <div className="bg-gray-800 rounded-xl p-6">
           <div className="flex items-center gap-4 mb-6">
-            <img 
-              src={selectedBodyTypeData.image} 
-              alt={selectedBodyTypeData.name}
-              className="w-16 h-20 object-cover rounded-lg"
-            />
+            {selectedBodyTypeData.image && (
+              <img
+                src={selectedBodyTypeData.image}
+                alt={`Image of ${selectedBodyTypeData.name} body type`}
+                className="w-16 h-20 object-cover rounded-lg"
+              />
+            )}
             <div>
               <h3 className="text-xl font-bold text-white">{selectedBodyTypeData.name}</h3>
               <p className="text-gray-300 text-sm">{selectedBodyTypeData.description}</p>
@@ -663,26 +878,30 @@ const Account: React.FC = () => {
               Sample Meal Plan
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Object.entries(selectedBodyTypeData.mealPlan).filter(([key]) => key !== 'tips').map(([meal, food]) => (
-                <div key={meal} className="bg-gray-700 rounded-lg p-3">
-                  <h5 className="font-medium text-orange-400 capitalize mb-1">
-                    {meal.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                  </h5>
-                  <p className="text-gray-300 text-sm">{food}</p>
-                </div>
-              ))}
+              {selectedBodyTypeData.mealPlan &&
+                Object.entries(selectedBodyTypeData.mealPlan)
+                  .filter(([key]) => key !== 'tips')
+                  .map(([meal, food]) => (
+                    <div key={meal} className="bg-gray-700 rounded-lg p-3">
+                      <h5 className="font-medium text-orange-400 capitalize mb-1">
+                        {meal.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                      </h5>
+                      <p className="text-gray-300 text-sm">{food}</p>
+                    </div>
+                  ))}
             </div>
-            <div className="mt-4 p-4 bg-blue-900/30 rounded-lg border border-blue-500/30">
-              <h5 className="font-medium text-blue-400 mb-2 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" />
-                Nutrition Tips
-              </h5>
-              <p className="text-gray-300 text-sm">{selectedBodyTypeData.mealPlan.tips}</p>
-            </div>
+            {selectedBodyTypeData.mealPlan?.tips && (
+              <div className="mt-4 p-4 bg-blue-900/30 rounded-lg border border-blue-500/30">
+                <h5 className="font-medium text-blue-400 mb-2 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  Nutrition Tips
+                </h5>
+                <p className="text-gray-300 text-sm">{selectedBodyTypeData.mealPlan.tips}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
-
       {/* Body Fat Calculator */}
       <div>
         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
@@ -872,77 +1091,6 @@ const Account: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Progress History */}
-            {bodyFatHistory.length > 0 && (
-              <div className="bg-gray-800 rounded-xl p-6">
-                <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-purple-400" />
-                  Progress History
-                </h4>
-                
-                {/* Chart */}
-                <div className="h-48 mb-6">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={bodyFatHistory.slice().reverse()}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="#9CA3AF"
-                        fontSize={12}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString()}
-                      />
-                      <YAxis stroke="#9CA3AF" fontSize={12} />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#1F2937', 
-                          border: '1px solid #374151',
-                          borderRadius: '8px',
-                          color: '#F3F4F6'
-                        }}
-                        labelFormatter={(value) => new Date(value).toLocaleDateString()}
-                        formatter={(value) => [`${value}%`, 'Body Fat']}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="bodyFatPercentage" 
-                        stroke="#8B5CF6" 
-                        fill="#8B5CF6"
-                        fillOpacity={0.3}
-                        strokeWidth={2}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Recent Measurements */}
-                <div className="space-y-3">
-                  {bodyFatHistory.slice(0, 3).map((measurement, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-700/30 rounded-lg">
-                      <div>
-                        <p className="text-white font-medium">{measurement.bodyFatPercentage}%</p>
-                        <p className="text-sm text-gray-400">{new Date(measurement.date).toLocaleDateString()}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className={`text-sm font-medium ${getClassificationColor(measurement.classification)}`}>
-                          {measurement.classification}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          W: {measurement.waist}cm | N: {measurement.neck}cm
-                          {measurement.hip && ` | H: ${measurement.hip}cm`}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {bodyFatHistory.length > 3 && (
-                  <button className="w-full mt-4 py-2 text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200">
-                    View All Measurements ({bodyFatHistory.length})
-                  </button>
-                )}
-              </div>
-            )}
-
             {/* Information Panel */}
             <div className="bg-gray-800 rounded-xl p-6">
               <h4 className="text-lg font-semibold text-white mb-4">About This Calculator</h4>
@@ -970,158 +1118,8 @@ const Account: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Progress Photos */}
-      <div>
-        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <Camera className="w-5 h-5" />
-          Progress Photos
-        </h3>
-        
-        <div 
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            isDragOver ? 'border-blue-400 bg-blue-400/10' : 'border-gray-600 hover:border-gray-500'
-          }`}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-        >
-          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-300 mb-2">Drag and drop photos here, or click to select</p>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-          >
-            Select Photos
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) => handlePhotoUpload(e.target.files)}
-            className="hidden"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          {progressPhotos.map(photo => (
-            <div key={photo.id} className="relative group">
-              <img
-                src={photo.url}
-                alt={`Progress ${photo.date}`}
-                className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => setSelectedPhoto(photo)}
-              />
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => deletePhoto(photo.id)}
-                  className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-full"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                {new Date(photo.date).toLocaleDateString()}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
-  );
-
-  const renderAnalyticsTab = () => (
-    <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-white">Analytics</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gray-800 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-500/20 rounded-lg">
-              <BarChart3 className="w-6 h-6 text-blue-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Current Weight</h3>
-              <p className="text-gray-400 text-sm">Latest measurement</p>
-            </div>
-          </div>
-          <p className="text-3xl font-bold text-white">73.0 kg</p>
-          <p className="text-green-400 text-sm mt-1">-2.0 kg this month</p>
-        </div>
-
-        <div className="bg-gray-800 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-purple-500/20 rounded-lg">
-              <Target className="w-6 h-6 text-purple-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">Body Fat</h3>
-              <p className="text-gray-400 text-sm">Current percentage</p>
-            </div>
-          </div>
-          <p className="text-3xl font-bold text-white">17.0%</p>
-          <p className="text-green-400 text-sm mt-1">-1.0% this month</p>
-        </div>
-
-        <div className="bg-gray-800 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-orange-500/20 rounded-lg">
-              <Activity className="w-6 h-6 text-orange-400" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">BMI</h3>
-              <p className="text-gray-400 text-sm">Body Mass Index</p>
-            </div>
-          </div>
-          <p className="text-3xl font-bold text-white">23.8</p>
-          <p className="text-green-400 text-sm mt-1">Normal range</p>
-        </div>
-      </div>
-
-      <div className="bg-gray-800 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Progress Over Time</h3>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={progressData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis 
-                dataKey="date" 
-                stroke="#9CA3AF"
-                fontSize={12}
-                tickFormatter={(value) => new Date(value).toLocaleDateString()}
-              />
-              <YAxis stroke="#9CA3AF" fontSize={12} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1F2937', 
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#F3F4F6'
-                }}
-                labelFormatter={(value) => new Date(value).toLocaleDateString()}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="weight" 
-                stroke="#3B82F6" 
-                strokeWidth={2}
-                dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                name="Weight (kg)"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="bodyFat" 
-                stroke="#8B5CF6" 
-                strokeWidth={2}
-                dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
-                name="Body Fat (%)"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
+    
   );
 
   const renderSettingsTab = () => (
@@ -1191,19 +1189,54 @@ const Account: React.FC = () => {
             Privacy & Security
           </h3>
           <div className="space-y-4">
-            <button className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
-              <p className="text-white font-medium">Change Password</p>
-              <p className="text-gray-400 text-sm">Update your account password</p>
-            </button>
-            <button className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
-              <p className="text-white font-medium">Two-Factor Authentication</p>
-              <p className="text-gray-400 text-sm">Add an extra layer of security</p>
-            </button>
-            <button className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
-              <p className="text-white font-medium">Data Export</p>
-              <p className="text-gray-400 text-sm">Download your data</p>
-            </button>
-          </div>
+      <button
+        className="w-full text-left p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+        onClick={() => setShowModal(true)}
+      >
+        <p className="text-white font-medium">Change Password</p>
+        <p className="text-gray-400 text-sm">Update your account password</p>
+      </button>
+
+            {showModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
+    <div className="bg-black rounded-xl p-6 w-full max-w-md space-y-4 shadow-lg z-50">
+      <h2 className="text-lg font-semibold text-gray-800">Change Password</h2>
+
+      <input
+        type="password"
+        placeholder="Old Password"
+        value={oldPassword}
+        onChange={(e) => setOldPassword(e.target.value)}
+        className="bg-black w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+      />
+
+      <input
+        type="password"
+        placeholder="New Password"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        className="bg-black w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+      />
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowModal(false)}
+          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleChangePassword}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+    </div>
+
         </div>
       </div>
     </div>

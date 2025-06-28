@@ -5,9 +5,21 @@
 export const formatDate = (date: Date): string => {
   return date.toISOString().split('T')[0];
 };
+export const formatDateForCalender = (date: Date, timeZone: string = "Asia/Kolkata"): string => {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  // "2025-06-28" from en-CA format
+  return formatter.format(date);
+};
 
 export const getTodayString = (): string => {
-  return formatDate(new Date());
+  const today =formatDate(new Date());
+  return (today);
 };
 
 export const getTomorrowString = (): string => {
@@ -39,7 +51,8 @@ export const parseDateString = (dateString: string): Date => {
 };
 
 export const formatDisplayDate = (dateString: string): string => {
-  const date = parseDateString(dateString);
+  console.log("date",dateString)
+  const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -49,7 +62,7 @@ export const formatDisplayDate = (dateString: string): string => {
 
 export const getDaysInWeek = (startDate?: Date): string[] => {
   const start = startDate || new Date();
-  const week = [];
+  const week: string[] = [];
   
   // Get the start of the week (Sunday)
   const startOfWeek = new Date(start);

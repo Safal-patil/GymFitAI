@@ -7,7 +7,6 @@ import {
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
-
 const exercisestatusrouter = Router();
 
 exercisestatusrouter.route("/exercisesbyday").post(verifyJWT, ExercisesbyDay)

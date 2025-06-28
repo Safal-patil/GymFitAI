@@ -16,6 +16,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import NotificationPanel from './NotificationPanel';
 import LogoutModal from './LogoutModal';
+import { profile } from 'console';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -122,12 +123,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="hidden sm:flex items-center space-x-3">
                 <img
                   src={user?.avatar}
-                  alt={user?.name}
+                  alt={user?.profile.name}
                   className="w-8 h-8 rounded-full ring-2 ring-primary-500"
                 />
                 <div className="hidden lg:block">
                   <p className="text-sm text-gray-300">{getGreeting()}</p>
-                  <p className="text-sm font-medium text-white">{user?.name}</p>
+                  <p className="text-sm font-medium text-white">{user?.profile.name}</p>
                 </div>
               </div>
 
@@ -176,11 +177,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex items-center space-x-3 p-3 bg-gray-700/50 rounded-lg mb-4">
               <img
                 src={user?.avatar}
-                alt={user?.name}
+                alt={user?.profile.name}
                 className="w-10 h-10 rounded-full ring-2 ring-primary-500"
               />
               <div>
-                <p className="text-sm font-medium text-white">{user?.name}</p>
+                <p className="text-sm font-medium text-white">{user?.profile.name}</p>
                 <p className="text-xs text-gray-400">{user?.email}</p>
               </div>
             </div>

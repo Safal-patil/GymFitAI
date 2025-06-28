@@ -30,14 +30,23 @@ const planRecommendation = asyncHandler(async(req, res)=>{
                     "heightCm": 178,
                     "bodyfat": 20,
                     "experienceLevel": "beginner",
-                    "maxPushups": 20,
-                    "maxPullups": 3,
-                    "maxSquats": 30
+                },
+                strengthinfo: {
+                "maxPushups": 20,
+                "maxPullups": 3,
+                "maxSquats": 30,
+                "maxBenchKg": 20,
+                "maxSquatkg": 20,
+                "maxDeadliftkg": 20
                 },
                 "preferences": {
                     "goal": "muscular",
-                    "daysPerWeek": 4,
-                    "planStyle": "push-pull-leg"
+                    "daysPerWeek": number, 
+                    "planStyle": "push-pull-leg",
+                    sessionDuration: "45 minutes",
+                    equipment: "Full gym access",
+                    limitations: "broken ankle",
+                    availableTime: "early morning"
                 }
             }
 
@@ -48,35 +57,47 @@ const planRecommendation = asyncHandler(async(req, res)=>{
                 json
                 {
                 "days": [
+                {
                     "date": Date,//// change accroing to wrokour date
                     "exercises": [
                         {
-                        "id": Number,
-                        "name": "String",
-                        "title": "String",
-                        "date": Date, // change accroing to wrokour date
-                        "description": "String",
-                        "shortDescription": "String",
-                        "type": "String",
-                        "bodyPart": "String",
-                        "equipment": "String",
-                        "level": "String",
-                        "difficultyTag": "easy | medium | hard",
-                        "avgSets": Number,
-                        "avgReps": Number,
-                        "calorieBurnPerRep": Number,
-                        "status": {
-                            "totalSets": Number,
-                            "completedSets": 0,
-                            "totalReps": Number,
-                            "completedReps": 0
+                        "id": Number,//1,2,3,4,5, per day
+                        name: { type: String, required: true },
+                        title: { type: String },
+                        date: { type: Date, required: true },
+                        description: { type: String },
+                        shortDescription: { type: String },
+                        
+                        type: { type: String },
+                        bodyPart: { type: String },
+                        equipment: { type: String },
+
+                        weight: { type: Number },
+                        duration: { type: Number },
+                        restperoid: { type: Number },
+                        instructions: { type: String },
+
+                        level: { type: String },
+                        difficultyTag: { type: String },
+
+                        avgSets: { type: Number },
+                        avgReps: { type: Number },
+                        calorieBurnPerRep: { type: Number },
+
+                        status: {
+                            completedByUser: { type: Boolean, default: false },
+                            completePercent : { type: Number, default: 0 },
+                            totalSets: { type: Number, default: 1 },
+                            completedSets: { type: Number, default: 0 },
+                            totalReps: { type: Number, default: 2 },
+                            completedReps: { type: Number, default: 0 }
                         },
-                        "rating": Number (0–5),
-                        "ratingDesc": "String",
-                        "createdAt": "YYYY-MM-DD"
+
+                        rating: { type: Number, min: 0, max: 5 },
+                        ratingDesc: { type: String }
                         }
                     ]
-                    
+                }    
                 ],
                 "nutrition": [ "String", "String", "String", "String", "String" ],
                 "recommendations": [ "String", "String", "String", "String", "String" ],
@@ -139,8 +160,10 @@ const planRecommendation = asyncHandler(async(req, res)=>{
                 
                 If daysPerWeek is than 7, then put rest days in between and accordinly changes dates in result.
 
-            Output must be a pure JSON response, no explanation, no code block tags, no Markdown, and must be syntactically valid.
-            
+            9.  Days per week:
+                Always create days array of size 7, then then fill daysperWeek element, and rest day is empty array!
+                Output must be a pure JSON response, no explanation, no code block tags, no Markdown, and must be syntactically valid.
+            10. Emphasis on sessionDuration, equipment and limitations, availableTime, as not everyone will have full gym access and some may have physical limitations.
             `;
 
 
@@ -160,10 +183,8 @@ const planRecommendation = asyncHandler(async(req, res)=>{
 
         const cleaned_plan = plan.replace("```", "").replace("\n", "").replace("json", "")
         const output = JSON.parse(cleaned_plan)
-        console.log(3);
-
+        
         const user_id = req.user.id;
-        console.log(output);
         
         
         const days = output['days']
@@ -224,7 +245,8 @@ const planRecommendation = asyncHandler(async(req, res)=>{
 
 
 const historyPrediction = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
+    const user = req?.user;
+    const userId = user?._id;
 
     const today = new Date();
     today.setHours(23, 59, 59, 999); // End of today
@@ -234,6 +256,8 @@ const historyPrediction = asyncHandler(async (req, res) => {
     fourteenDaysAgo.setHours(0, 0, 0, 0); // Start of 14 days ago
 
     const exercises = await Exercises.find({
+    userId: userId,
+    "status.completedByUser": true,
     createdAt: {
         $gte: fourteenDaysAgo,
         $lte: today
@@ -256,9 +280,12 @@ const historyPrediction = asyncHandler(async (req, res) => {
         2. **recommendations** – 5 fitness or lifestyle suggestions tailored to improve the user's upcoming sessions based on their current effort and consistency.
         3. **goals** – 5 achievable goals the user should target over the next 1–4 weeks based on performance trends.
         4. **prediction** – 5 outcome-based statements on what the user is likely to observe (e.g., physical, strength, or energy improvements) if they continue with similar efforts.
-
+        5. **progressData**- 5 future predictions of progress data from the user's recent training sessions.
+        6. **BodyType** - return type of body, person can achieve after 30 days from the user's recent training sessions.
         ${{history : created_exercises}}
-
+        ${{weigth: user.profile.weightKg || 70,
+            bodyfat: user.profile.bodyfat || 7,
+        }}
         **INPUT FORMAT (history):**
         json
         {
@@ -302,6 +329,14 @@ const historyPrediction = asyncHandler(async (req, res) => {
         "recommendations": [ "String", "String", "String", "String", "String" ],
         "goals": [ "String", "String", "String", "String", "String" ],
         "prediction": [ "String", "String", "String", "String", "String" ]
+        "progressData" : [
+            { date: '2025-01-01', weight: 75, bodyFat: 18 },
+            { date: '2025-01-08', weight: 74.5, bodyFat: 17.8 },
+            { date: '2025-01-15', weight: 74, bodyFat: 17.5 },
+            { date: '2025-01-22', weight: 73.5, bodyFat: 17.2 },
+            { date: '2025-01-29', weight: 73, bodyFat: 17 },
+        ];/ dates must extimate and sould greater than current date.
+        "BodyType" : "Lean" | "Average" | "Fit" | "Muscular" | "LargeBody" 
         }
 
         Output must be a pure JSON response, no explanation, no code block tags, no Markdown, and must be syntactically valid.
@@ -347,10 +382,9 @@ const historyPrediction = asyncHandler(async (req, res) => {
         )
 
 
-
         return res
             .status(200)
-            .json(new ApiResponse(true, "Planner created successfully!", output));
+            .json(new ApiResponse(true, output, "Planner created successfully!"));
  
     } catch (err) {
         console.error('OpenAI error:', err);
@@ -380,7 +414,7 @@ const chat = asyncHandler(async(req, res) =>{
 
     return res
            .status(200)
-           .json(new ApiResponse(true, "chat replied!", reply));
+           .json(new ApiResponse(true, reply, "chat replied!"));
 
   } catch (err) {
     console.error('OpenAI error:', err);

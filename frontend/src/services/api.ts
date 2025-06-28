@@ -1,8 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-const REQUEST_TIMEOUT = 10000; // 10 seconds
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api/v1';
+const REQUEST_TIMEOUT = 120000; // 10 seconds
 
 // API Response Interface
 interface ApiResponse<T = any> {
@@ -104,13 +104,15 @@ apiClient.interceptors.response.use(
 const retryRequest = async <T>(
   requestFn: () => Promise<AxiosResponse<ApiResponse<T>>>,
   maxRetries: number = 3,
-  delay: number = 1000
+  delay: number = 5000
 ): Promise<T> => {
   let lastError: any;
   
   for (let i = 0; i < maxRetries; i++) {
     try {
+      console.log(`Attempt ${i + 1}`);
       const response = await requestFn();
+      console.log(response.data.data)
       return response.data.data;
     } catch (error) {
       lastError = error;
