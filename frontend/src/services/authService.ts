@@ -1,4 +1,4 @@
-import { log } from 'console';
+
 import { apiClient, retryRequest, ApiResponse } from './api';
 interface AutoFillData {
   // Personal Info
@@ -75,6 +75,7 @@ interface AuthResponse {
 }
 
 interface User {
+  id: string;
    _id?: string;
   email: string;
   workoutPhotos: string[]; // Cloudinary URLs
@@ -163,7 +164,7 @@ class AuthService {
   // Login user
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     try {
-      const response = await retryRequest(() => 
+      const response: AuthResponse = await retryRequest(() => 
         apiClient.post<ApiResponse<AuthResponse>>('/user/login', credentials)
       );
       
@@ -183,7 +184,7 @@ class AuthService {
   // Register user
   async register(userData: RegisterRequest): Promise<User> {
     try {
-      const response = await retryRequest(() => 
+      const response: User = await retryRequest(() => 
         
         apiClient.post<ApiResponse<User>>('/user/register', userData)
       );
@@ -215,7 +216,7 @@ class AuthService {
   // Get current user
   async getCurrentUser(): Promise<User> {
     try {
-      const response = await retryRequest(() => 
+      const response: User = await retryRequest(() => 
         apiClient.get<ApiResponse<User>>('/user/current-user')
       );
       
@@ -235,7 +236,7 @@ class AuthService {
       
       
       
-      const response = await retryRequest(() => 
+      const response: User = await retryRequest(() => 
         apiClient.post<ApiResponse<User>>('/user/updateprofile', {input: profileData})
       );
       
@@ -251,7 +252,7 @@ class AuthService {
 
   async updateAccountDetails(accountData:ProfileForm ): Promise<User> {
       try {
-        const response = await retryRequest(() => 
+        const response: User = await retryRequest(() => 
           apiClient.patch<ApiResponse<User>>('/user/update-account', {input: accountData})
         );
         
@@ -289,7 +290,7 @@ class AuthService {
 
   async getWorkoutPhotos  ():Promise<WorkoutPhotos[]>{
     try {
-      const response = await retryRequest(() => 
+      const response: WorkoutPhotos[] = await retryRequest(() => 
         apiClient.get<ApiResponse<WorkoutPhotos[]>>('/user/getworkoutphotos')
       );
       return response;
