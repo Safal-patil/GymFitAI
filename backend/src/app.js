@@ -29,7 +29,7 @@ app.use("/api/v1/recommendation", recommendationrouter);//done
 app.use("/api/v1/transaction", transactionrouter);//done
 app.use("/api/v1/statusexercise", exercisestatusrouter);
 app.use("/api/v1/exercise", gymrouter);//done
-app.use("/api/v1/notifications", notificationrouter);
+app.use("/api/v1/notifications", notificationrouter);//done
 
 
 
